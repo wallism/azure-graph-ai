@@ -228,8 +228,13 @@ public sealed class SqlManagedInstance : AzureResourceNode
     [JsonProperty("properties", NullValueHandling = NullValueHandling.Ignore)]
     public SqlManagedInstanceProperties? Properties { get; set; }
 
-    [NodeRelationship<Subnet>("DEPLOYED_IN_SUBNET")]
+    [NodeRelationship<Subnet>(Edges.DeployedInSubnet)]
     public List<string> DeployedInSubnets { get; set; } = [];
+
+    public static class Edges
+    {
+        public const string DeployedInSubnet = "DEPLOYED_IN_SUBNET";
+    }
 }
 
 public sealed class SqlManagedInstanceProperties

@@ -41,6 +41,51 @@ The dry run verifies Neo4j connectivity and loads the configured Azure subscript
 
 The current collectors cover subscriptions, resource groups, VNets, subnets, peerings, storage accounts, key vaults, app service plans, web apps, web jobs, container registries, container apps, Redis caches, and SQL managed instances.
 
+### How Resource Loading Works
+
+The importer does not ask Azure for every resource in a resource group and then dynamically map whatever comes back. It uses explicit collectors for the Azure resource types the project knows how to model.
+
+The import flow is:
+
+1. Read configured subscription IDs from `AzureGraph:IncludedSubscriptions`, falling back to `Azure:IncludedSubscriptions`.
+2. Build an import context for those subscriptions.
+3. Run every registered `IAzureResourceCollector` in `Order`.
+4. Each collector calls the Azure REST endpoint for its resource type for each configured subscription.
+5. Each collector follows Azure `nextLink` paging until all pages for that resource type are loaded.
+6. Common links are applied to each resource node:
+   - `IN_SUBSCRIPTION`
+   - `IN_GROUP`, where the ARM ID contains a resource group
+   - optional `environment`, from configured environment rules
+7. After all nodes have been collected, collectors build cross-resource relationship IDs.
+8. Dangling relationship IDs are pruned before graph writes, so edges are only written when both endpoint nodes exist in the import context.
+9. Neo4j unique constraints are enforced.
+10. All nodes are upserted.
+11. All relationships are upserted.
+
+Most top-level resource collectors use subscription-scope provider list APIs, for example:
+
+- `/{subscriptionId}/resourceGroups`
+- `/{subscriptionId}/providers/Microsoft.Storage/storageAccounts`
+- `/{subscriptionId}/providers/Microsoft.KeyVault/vaults`
+- `/{subscriptionId}/providers/Microsoft.ManagedIdentity/userAssignedIdentities`
+- `/{subscriptionId}/providers/Microsoft.Web/sites`
+- `/{subscriptionId}/providers/Microsoft.Web/serverfarms`
+- `/{subscriptionId}/providers/Microsoft.Network/virtualNetworks`
+- `/{subscriptionId}/providers/Microsoft.App/containerApps`
+- `/{subscriptionId}/providers/Microsoft.ContainerRegistry/registries`
+- `/{subscriptionId}/providers/Microsoft.Cache/redis`
+- `/{subscriptionId}/providers/Microsoft.Sql/managedInstances`
+
+Resource groups are loaded as graph nodes and as relationship targets. They are not currently used as the outer loop for discovering resources.
+
+Some child or detail resources are loaded differently:
+
+- VNets include subnets and peerings in the VNet response. The VNet collector extracts those nested resources into their own graph nodes.
+- Web apps are loaded from the subscription-level sites endpoint, then enriched with resource-group-scoped calls for site config, app settings, connection strings, and Windows continuous WebJobs.
+- Container apps are loaded from the subscription-level Container Apps endpoint, then related to registries from their registry configuration.
+
+This means adding support for a new Azure resource type is deliberate: add a model, add an API method, add/register a collector, and add relationship-building logic where that resource references or is referenced by other resources.
+
 ## Environments
 
 Environment is intentionally an optional enrichment, not a core Azure resource concept. Configure project-specific rules under `AzureGraph:EnvironmentRules`; matching resources get an `environment` graph property. If no rule matches, no environment value is written.

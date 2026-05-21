@@ -9,7 +9,7 @@ public sealed class ContainerApp : AzureResourceNode
     [JsonProperty("properties", NullValueHandling = NullValueHandling.Ignore)]
     public ContainerAppProperties? Properties { get; set; }
 
-    [NodeRelationship<ContainerRegistry>("PULLS_FROM_REGISTRY")]
+    [NodeRelationship<ContainerRegistry>(Edges.PullsFromRegistry)]
     public List<string> PullsFromRegistries { get; set; } = [];
 
     [NodeProperty("runningStatus")]
@@ -19,6 +19,11 @@ public sealed class ContainerApp : AzureResourceNode
     [NodeProperty("latestRevisionFqdn")]
     [JsonIgnore]
     public string? LatestRevisionFqdn => Properties?.LatestRevisionFqdn;
+
+    public static class Edges
+    {
+        public const string PullsFromRegistry = "PULLS_FROM_REGISTRY";
+    }
 }
 
 public sealed class ContainerAppProperties

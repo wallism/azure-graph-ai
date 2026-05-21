@@ -27,26 +27,36 @@ public sealed class WebApp : AzureResourceNode
     [JsonIgnore]
     public bool HasIPSecurityRestrictions => Properties?.SiteConfig?.IpSecurityRestrictionsDefaultAction is not null;
 
-    [NodeRelationship<ServerFarm>("RUNS_ON_FARM")]
+    [NodeRelationship<ServerFarm>(Edges.RunsOnFarm)]
     public List<string> ServerFarms { get; set; } = [];
 
-    [NodeRelationship<Subnet>("DEPLOYED_IN_SUBNET")]
+    [NodeRelationship<Subnet>(Edges.DeployedInSubnet)]
     public List<string> DeployedInSubnets { get; set; } = [];
 
-    [NodeRelationship<KeyVault>("CONNECTS_TO_KEYVAULT")]
+    [NodeRelationship<KeyVault>(Edges.ConnectsToKeyVault)]
     public List<string> KeyVaults { get; set; } = [];
 
-    [NodeRelationship<StorageAccount>("CONNECTS_TO_STORAGE")]
+    [NodeRelationship<StorageAccount>(Edges.ConnectsToStorage)]
     public List<string> StorageAccounts { get; set; } = [];
 
-    [NodeRelationship<RedisCache>("CONNECTS_TO_REDIS")]
+    [NodeRelationship<RedisCache>(Edges.ConnectsToRedis)]
     public List<string> RedisCaches { get; set; } = [];
 
-    [NodeRelationship<SqlManagedInstance>("CONNECTS_TO_SQLMI")]
+    [NodeRelationship<SqlManagedInstance>(Edges.ConnectsToSqlManagedInstance)]
     public List<string> SqlManagedInstances { get; set; } = [];
 
     [JsonIgnore]
     public List<ConnectionToService> ConnectionsTo { get; } = [];
+
+    public static class Edges
+    {
+        public const string RunsOnFarm = "RUNS_ON_FARM";
+        public const string DeployedInSubnet = "DEPLOYED_IN_SUBNET";
+        public const string ConnectsToKeyVault = "CONNECTS_TO_KEYVAULT";
+        public const string ConnectsToStorage = "CONNECTS_TO_STORAGE";
+        public const string ConnectsToRedis = "CONNECTS_TO_REDIS";
+        public const string ConnectsToSqlManagedInstance = "CONNECTS_TO_SQLMI";
+    }
 }
 
 public sealed class WebAppProperties

@@ -9,10 +9,10 @@ public sealed class VNet : AzureResourceNode
     [JsonProperty("properties", NullValueHandling = NullValueHandling.Ignore)]
     public VNetProperties? Properties { get; set; }
 
-    [NodeRelationship<Subnet>("HAS_SUBNET")]
+    [NodeRelationship<Subnet>(Edges.HasSubnet)]
     public List<string> Subnets { get; set; } = [];
 
-    [NodeRelationship<VirtualNetworkPeering>("HAS_PEERING")]
+    [NodeRelationship<VirtualNetworkPeering>(Edges.HasPeering)]
     public List<string> Peerings { get; set; } = [];
 
     [NodeProperty("addressPrefixes")]
@@ -20,6 +20,12 @@ public sealed class VNet : AzureResourceNode
     public string? AddressPrefixes => Properties?.AddressSpace?.AddressPrefixes is { Count: > 0 } prefixes
         ? string.Join(", ", prefixes)
         : null;
+
+    public static class Edges
+    {
+        public const string HasSubnet = "HAS_SUBNET";
+        public const string HasPeering = "HAS_PEERING";
+    }
 }
 
 public sealed class VNetProperties

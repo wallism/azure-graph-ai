@@ -10,13 +10,13 @@ public interface IEnvironmentAnnotatedResource
 
 public abstract class AzureResourceNode : AzureGraphNode, IEnvironmentAnnotatedResource
 {
-    [NodeRelationship<ResourceGroup>("IN_GROUP")]
+    [NodeRelationship<ResourceGroup>(CommonEdges.InGroup)]
     public List<string> ResourceGroups { get; set; } = [];
 
-    [NodeRelationship<Subscription>("IN_SUBSCRIPTION")]
+    [NodeRelationship<Subscription>(CommonEdges.InSubscription)]
     public List<string> Subscriptions { get; set; } = [];
 
-    [NodeRelationship<UserAssignedManagedIdentity>("USES_MANAGED_IDENTITY")]
+    [NodeRelationship<UserAssignedManagedIdentity>(CommonEdges.UsesManagedIdentity)]
     public List<string> UserAssignedManagedIdentities { get; set; } = [];
 
     [JsonProperty("identity", NullValueHandling = NullValueHandling.Ignore)]
@@ -45,4 +45,11 @@ public abstract class AzureResourceNode : AzureGraphNode, IEnvironmentAnnotatedR
     [NodeProperty("environment")]
     [JsonIgnore]
     public string? Environment { get; set; }
+
+    public static class CommonEdges
+    {
+        public const string InGroup = "IN_GROUP";
+        public const string InSubscription = "IN_SUBSCRIPTION";
+        public const string UsesManagedIdentity = "USES_MANAGED_IDENTITY";
+    }
 }
