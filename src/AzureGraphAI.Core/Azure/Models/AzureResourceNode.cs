@@ -16,6 +16,24 @@ public abstract class AzureResourceNode : AzureGraphNode, IEnvironmentAnnotatedR
     [NodeRelationship<Subscription>("IN_SUBSCRIPTION")]
     public List<string> Subscriptions { get; set; } = [];
 
+    [NodeRelationship<UserAssignedManagedIdentity>("USES_MANAGED_IDENTITY")]
+    public List<string> UserAssignedManagedIdentities { get; set; } = [];
+
+    [JsonProperty("identity", NullValueHandling = NullValueHandling.Ignore)]
+    public AzureIdentity? Identity { get; set; }
+
+    [NodeProperty("identityType")]
+    [JsonIgnore]
+    public string? IdentityType => Identity?.Type;
+
+    [NodeProperty("identityPrincipalId")]
+    [JsonIgnore]
+    public Guid? IdentityPrincipalId => Identity?.PrincipalId;
+
+    [NodeProperty("identityTenantId")]
+    [JsonIgnore]
+    public Guid? IdentityTenantId => Identity?.TenantId;
+
     [NodeProperty("subscriptionId")]
     [JsonIgnore]
     public string? SubscriptionId => AzureResourceId.GetSubscriptionId(Id);

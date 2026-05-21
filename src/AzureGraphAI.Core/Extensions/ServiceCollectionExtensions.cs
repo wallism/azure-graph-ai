@@ -37,6 +37,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAzureResourceCollector, VNetCollector>();
         services.AddSingleton<IAzureResourceCollector, StorageAccountCollector>();
         services.AddSingleton<IAzureResourceCollector, KeyVaultCollector>();
+        services.AddSingleton<IAzureResourceCollector, UserAssignedManagedIdentityCollector>();
         services.AddSingleton<IAzureResourceCollector, ServerFarmCollector>();
         services.AddSingleton<IAzureResourceCollector, ContainerRegistryCollector>();
         services.AddSingleton<IAzureResourceCollector, RedisCacheCollector>();

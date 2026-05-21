@@ -13,6 +13,7 @@ public interface IAzureRestApi
     Task<CallResult<AzureResourceListResult<ResourceGroup>>> GetResourceGroupsAsync(string subscriptionId, CancellationToken cancellationToken = default);
     Task<CallResult<AzureResourceListResult<StorageAccount>>> GetStorageAccountsAsync(string subscriptionId, CancellationToken cancellationToken = default);
     Task<CallResult<AzureResourceListResult<KeyVault>>> GetKeyVaultsAsync(string subscriptionId, CancellationToken cancellationToken = default);
+    Task<CallResult<AzureResourceListResult<UserAssignedManagedIdentity>>> GetUserAssignedManagedIdentitiesAsync(string subscriptionId, CancellationToken cancellationToken = default);
     Task<CallResult<AzureResourceListResult<WebApp>>> GetWebAppsAsync(string subscriptionId, CancellationToken cancellationToken = default);
     Task<CallResult<AzureResourceListResult<ServerFarm>>> GetServerFarmsAsync(string subscriptionId, CancellationToken cancellationToken = default);
     Task<CallResult<AzureResourceListResult<VNet>>> GetVNetsAsync(string subscriptionId, CancellationToken cancellationToken = default);
@@ -36,6 +37,7 @@ public sealed class AzureRestApi : ApiBase, IAzureRestApi
     private readonly ApiMethod<AzureResourceListResult<ResourceGroup>> _getResourceGroups;
     private readonly ApiMethod<AzureResourceListResult<StorageAccount>> _getStorageAccounts;
     private readonly ApiMethod<AzureResourceListResult<KeyVault>> _getKeyVaults;
+    private readonly ApiMethod<AzureResourceListResult<UserAssignedManagedIdentity>> _getUserAssignedManagedIdentities;
     private readonly ApiMethod<AzureResourceListResult<WebApp>> _getWebApps;
     private readonly ApiMethod<AzureResourceListResult<ServerFarm>> _getServerFarms;
     private readonly ApiMethod<AzureResourceListResult<VNet>> _getVNets;
@@ -61,6 +63,7 @@ public sealed class AzureRestApi : ApiBase, IAzureRestApi
         _getResourceGroups = PrivateGet<AzureResourceListResult<ResourceGroup>>(MethodPriority.Normal);
         _getStorageAccounts = PrivateGet<AzureResourceListResult<StorageAccount>>(MethodPriority.Normal);
         _getKeyVaults = PrivateGet<AzureResourceListResult<KeyVault>>(MethodPriority.Normal);
+        _getUserAssignedManagedIdentities = PrivateGet<AzureResourceListResult<UserAssignedManagedIdentity>>(MethodPriority.Normal);
         _getWebApps = PrivateGet<AzureResourceListResult<WebApp>>(MethodPriority.Normal);
         _getServerFarms = PrivateGet<AzureResourceListResult<ServerFarm>>(MethodPriority.Normal);
         _getVNets = PrivateGet<AzureResourceListResult<VNet>>(MethodPriority.Normal);
@@ -89,6 +92,9 @@ public sealed class AzureRestApi : ApiBase, IAzureRestApi
 
     public Task<CallResult<AzureResourceListResult<KeyVault>>> GetKeyVaultsAsync(string subscriptionId, CancellationToken cancellationToken = default)
         => _getKeyVaults.Call($"{subscriptionId}/providers/Microsoft.KeyVault/vaults", "", "api-version=2023-07-01", cancellationToken);
+
+    public Task<CallResult<AzureResourceListResult<UserAssignedManagedIdentity>>> GetUserAssignedManagedIdentitiesAsync(string subscriptionId, CancellationToken cancellationToken = default)
+        => _getUserAssignedManagedIdentities.Call($"{subscriptionId}/providers/Microsoft.ManagedIdentity/userAssignedIdentities", "", "api-version=2024-11-30", cancellationToken);
 
     public Task<CallResult<AzureResourceListResult<WebApp>>> GetWebAppsAsync(string subscriptionId, CancellationToken cancellationToken = default)
         => _getWebApps.Call($"{subscriptionId}/providers/Microsoft.Web/sites", "", "api-version=2024-04-01", cancellationToken);

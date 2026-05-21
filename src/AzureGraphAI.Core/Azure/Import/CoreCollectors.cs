@@ -70,6 +70,38 @@ public sealed class KeyVaultCollector(
         => AzureApi.GetKeyVaultsAsync(subscriptionId, cancellationToken);
 }
 
+public sealed class UserAssignedManagedIdentityCollector(
+    IAzureRestApi azureApi,
+    ILogger<UserAssignedManagedIdentityCollector> logger)
+    : AzureResourceCollectorBase<UserAssignedManagedIdentity>(azureApi, logger)
+{
+    public override int Order => 50;
+
+    protected override Task<CallResult<AzureResourceListResult<UserAssignedManagedIdentity>>> LoadFirstPageAsync(string subscriptionId, CancellationToken cancellationToken)
+        => AzureApi.GetUserAssignedManagedIdentitiesAsync(subscriptionId, cancellationToken);
+
+    public Task BuildRelationshipsAsync(AzureImportContext context, CancellationToken cancellationToken = default)
+    {
+        foreach (var resource in context.GetAllNodes().OfType<AzureResourceNode>())
+        {
+            var identityIds = resource.Identity?.UserAssignedIdentities.Keys
+                .Where(id => !string.IsNullOrWhiteSpace(id))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList() ?? [];
+
+            foreach (var identityId in identityIds)
+            {
+                var identity = context.FindById<UserAssignedManagedIdentity>(identityId);
+                var relationshipId = identity?.Id ?? identityId;
+                if (!resource.UserAssignedManagedIdentities.Contains(relationshipId, StringComparer.OrdinalIgnoreCase))
+                    resource.UserAssignedManagedIdentities.Add(relationshipId);
+            }
+        }
+
+        return Task.CompletedTask;
+    }
+}
+
 public sealed class ServerFarmCollector(
     IAzureRestApi azureApi,
     ILogger<ServerFarmCollector> logger)

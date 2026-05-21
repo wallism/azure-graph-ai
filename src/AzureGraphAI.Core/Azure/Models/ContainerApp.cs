@@ -9,9 +9,6 @@ public sealed class ContainerApp : AzureResourceNode
     [JsonProperty("properties", NullValueHandling = NullValueHandling.Ignore)]
     public ContainerAppProperties? Properties { get; set; }
 
-    [JsonProperty("identity", NullValueHandling = NullValueHandling.Ignore)]
-    public AzureIdentity? Identity { get; set; }
-
     [NodeRelationship<ContainerRegistry>("PULLS_FROM_REGISTRY")]
     public List<string> PullsFromRegistries { get; set; } = [];
 

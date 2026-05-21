@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 var builder = Host.CreateApplicationBuilder(args);
 
 builder.Configuration
+    .SetBasePath(AppContext.BaseDirectory)
     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
     .AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true)
     .AddEnvironmentVariables();
@@ -28,15 +29,32 @@ if (args.Any(arg => arg.Equals("--dry-run", StringComparison.OrdinalIgnoreCase))
     var dryRun = await dryRunService.RunAsync();
 
     Console.WriteLine("Dry run complete.");
-    Console.WriteLine($"Neo4j: {dryRun.Neo4jServer}");
-    foreach (var subscription in dryRun.Subscriptions)
+    Console.WriteLine("Neo4j settings:");
+    Console.WriteLine($"  Uri: {dryRun.Neo4jConnectionUri}");
+    Console.WriteLine($"  User: {dryRun.Neo4jUser}");
+    Console.WriteLine($"  Database: {dryRun.Neo4jDatabase}");
+    Console.WriteLine($"  Password configured: {dryRun.Neo4jPasswordConfigured} (length {dryRun.Neo4jPasswordLength})");
+    Console.WriteLine(dryRun.Neo4jSucceeded
+        ? $"Neo4j: OK ({dryRun.Neo4jServer})"
+        : $"Neo4j: FAILED ({dryRun.Neo4jError})");
+
+    foreach (var result in dryRun.SubscriptionResults)
     {
-        Console.WriteLine($"Subscription: {subscription.AzureSubscriptionId}");
+        if (!result.Succeeded || result.Subscription is null)
+        {
+            Console.WriteLine($"Subscription: FAILED ({result.SubscriptionId})");
+            Console.WriteLine($"  Error: {result.Error}");
+            continue;
+        }
+
+        var subscription = result.Subscription;
+        Console.WriteLine($"Subscription: OK ({subscription.AzureSubscriptionId})");
         Console.WriteLine($"  Name: {subscription.DisplayName}");
         Console.WriteLine($"  State: {subscription.State}");
         Console.WriteLine($"  Tenant: {subscription.TenantId}");
     }
 
+    Environment.ExitCode = dryRun.Succeeded ? 0 : 1;
     return;
 }
 

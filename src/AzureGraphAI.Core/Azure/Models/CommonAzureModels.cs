@@ -34,6 +34,18 @@ public sealed class AzureIdentity
 
     [JsonProperty("tenantId", NullValueHandling = NullValueHandling.Ignore)]
     public Guid? TenantId { get; set; }
+
+    [JsonProperty("userAssignedIdentities", NullValueHandling = NullValueHandling.Ignore)]
+    public Dictionary<string, UserAssignedIdentityReference> UserAssignedIdentities { get; set; } = [];
+}
+
+public sealed class UserAssignedIdentityReference
+{
+    [JsonProperty("principalId", NullValueHandling = NullValueHandling.Ignore)]
+    public Guid? PrincipalId { get; set; }
+
+    [JsonProperty("clientId", NullValueHandling = NullValueHandling.Ignore)]
+    public Guid? ClientId { get; set; }
 }
 
 public sealed class SystemData

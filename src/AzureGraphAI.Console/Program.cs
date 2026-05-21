@@ -9,6 +9,7 @@ using Microsoft.SemanticKernel;
 var builder = Host.CreateApplicationBuilder(args);
 
 builder.Configuration
+    .SetBasePath(AppContext.BaseDirectory)
     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
     .AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true)
     .AddEnvironmentVariables();

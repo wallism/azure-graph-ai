@@ -18,6 +18,44 @@ public sealed class ServerFarm : AzureResourceNode
     public ServerFarmProperties? Properties { get; set; }
 }
 
+public sealed class UserAssignedManagedIdentity : AzureResourceNode
+{
+    [NodeProperty("")]
+    [JsonProperty("properties", NullValueHandling = NullValueHandling.Ignore)]
+    public UserAssignedManagedIdentityProperties? Properties { get; set; }
+
+    [NodeProperty("principalId")]
+    [JsonIgnore]
+    public Guid? PrincipalId => Properties?.PrincipalId;
+
+    [NodeProperty("clientId")]
+    [JsonIgnore]
+    public Guid? ClientId => Properties?.ClientId;
+
+    [NodeProperty("tenantId")]
+    [JsonIgnore]
+    public Guid? TenantId => Properties?.TenantId;
+
+    [NodeProperty("isolationScope")]
+    [JsonIgnore]
+    public string? IsolationScope => Properties?.IsolationScope;
+}
+
+public sealed class UserAssignedManagedIdentityProperties
+{
+    [JsonProperty("principalId", NullValueHandling = NullValueHandling.Ignore)]
+    public Guid? PrincipalId { get; set; }
+
+    [JsonProperty("clientId", NullValueHandling = NullValueHandling.Ignore)]
+    public Guid? ClientId { get; set; }
+
+    [JsonProperty("tenantId", NullValueHandling = NullValueHandling.Ignore)]
+    public Guid? TenantId { get; set; }
+
+    [JsonProperty("isolationScope", NullValueHandling = NullValueHandling.Ignore)]
+    public string? IsolationScope { get; set; }
+}
+
 public sealed class ServerFarmProperties
 {
     [NodeProperty("status")]
