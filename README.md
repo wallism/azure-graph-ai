@@ -39,7 +39,25 @@ For local development the importer defaults to `AzureCli`, so it uses your curre
 
 The dry run verifies Neo4j connectivity and loads the configured Azure subscription resource without writing graph nodes or relationships.
 
-The current collectors cover subscriptions, resource groups, VNets, subnets, peerings, storage accounts, key vaults, user-assigned managed identities, app service plans, web apps, web jobs, container registries, container apps, Cosmos DB accounts, Azure AI Foundry accounts, Redis caches, and SQL managed instances.
+The current collectors cover:
+
+- subscriptions
+- resource groups
+- VNets
+- subnets
+- virtual network peerings
+- storage accounts
+- key vaults
+- user-assigned managed identities
+- app service plans
+- web apps
+- web jobs
+- container registries
+- container apps
+- Cosmos DB accounts
+- Azure AI Foundry accounts
+- Redis caches
+- SQL managed instances
 
 ### How Resource Loading Works
 
