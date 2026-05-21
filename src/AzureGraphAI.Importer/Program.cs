@@ -22,8 +22,25 @@ builder.Logging.AddSimpleConsole(options =>
 builder.Services.AddAzureGraphImporter(builder.Configuration);
 
 using var host = builder.Build();
-var importer = host.Services.GetRequiredService<IAzureGraphImportService>();
+if (args.Any(arg => arg.Equals("--dry-run", StringComparison.OrdinalIgnoreCase)))
+{
+    var dryRunService = host.Services.GetRequiredService<IAzureGraphDryRunService>();
+    var dryRun = await dryRunService.RunAsync();
 
+    Console.WriteLine("Dry run complete.");
+    Console.WriteLine($"Neo4j: {dryRun.Neo4jServer}");
+    foreach (var subscription in dryRun.Subscriptions)
+    {
+        Console.WriteLine($"Subscription: {subscription.AzureSubscriptionId}");
+        Console.WriteLine($"  Name: {subscription.DisplayName}");
+        Console.WriteLine($"  State: {subscription.State}");
+        Console.WriteLine($"  Tenant: {subscription.TenantId}");
+    }
+
+    return;
+}
+
+var importer = host.Services.GetRequiredService<IAzureGraphImportService>();
 var summary = await importer.ImportAsync();
 
 Console.WriteLine("Import complete.");

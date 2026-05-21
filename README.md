@@ -31,10 +31,13 @@ Then run:
 ```powershell
 az login
 az account set --subscription 38ae1d66-30e9-4ad4-b432-f0386f658e97
+dotnet run --project src\AzureGraphAI.Importer\AzureGraphAI.Importer.csproj -- --dry-run
 dotnet run --project src\AzureGraphAI.Importer\AzureGraphAI.Importer.csproj
 ```
 
 For local development the importer defaults to `AzureCli`, so it uses your current Azure CLI login. Service-principal client secret auth is still supported by setting `AzureGraph:Authentication:Mode` to `ClientSecret`.
+
+The dry run verifies Neo4j connectivity and loads the configured Azure subscription resource without writing graph nodes or relationships.
 
 The current collectors cover subscriptions, resource groups, VNets, subnets, peerings, storage accounts, key vaults, app service plans, web apps, web jobs, container registries, container apps, Redis caches, and SQL managed instances.
 

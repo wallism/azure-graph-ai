@@ -91,18 +91,7 @@ public sealed class AzureGraphImportService(
     }
 
     private List<string> LoadSubscriptionIds()
-    {
-        var options = configuration.GetSection("AzureGraph").Get<AzureGraphOptions>() ?? new AzureGraphOptions();
-        var configured = options.IncludedSubscriptions.Count > 0
-            ? options.IncludedSubscriptions
-            : configuration.GetSection("Azure:IncludedSubscriptions").Get<List<string>>() ?? [];
-
-        return configured
-            .Where(value => !string.IsNullOrWhiteSpace(value))
-            .Select(value => value.Trim())
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToList();
-    }
+        => AzureGraphSubscriptionConfiguration.LoadSubscriptionIds(configuration);
 
     private Task InvokeRepoListMethodAsync(MethodInfo genericMethod, Type nodeType, IReadOnlyList<AzureGraphNode> nodes)
     {

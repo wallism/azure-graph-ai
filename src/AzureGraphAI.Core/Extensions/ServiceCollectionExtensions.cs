@@ -45,6 +45,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAzureResourceCollector, WebAppCollector>();
 
         services.AddSingleton<IAzureGraphImportService, AzureGraphImportService>();
+        services.AddSingleton<IAzureGraphDryRunService, AzureGraphDryRunService>();
         services.AddNeo4jLiteRepo(configuration);
 
         return services;
