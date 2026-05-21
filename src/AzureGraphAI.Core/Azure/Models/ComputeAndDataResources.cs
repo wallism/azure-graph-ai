@@ -195,6 +195,112 @@ public sealed class ContainerRegistryProperties
     public string? PublicNetworkAccess { get; set; }
 }
 
+public sealed class CosmosDbAccount : AzureResourceNode
+{
+    [NodeProperty("kind")]
+    [JsonProperty("kind", NullValueHandling = NullValueHandling.Ignore)]
+    public string? Kind { get; set; }
+
+    [NodeProperty("")]
+    [JsonProperty("properties", NullValueHandling = NullValueHandling.Ignore)]
+    public CosmosDbAccountProperties? Properties { get; set; }
+
+    [NodeProperty("documentEndpoint")]
+    [JsonIgnore]
+    public string? DocumentEndpoint => Properties?.DocumentEndpoint;
+
+    [NodeProperty("databaseAccountOfferType")]
+    [JsonIgnore]
+    public string? DatabaseAccountOfferType => Properties?.DatabaseAccountOfferType;
+
+    [NodeProperty("provisioningState")]
+    [JsonIgnore]
+    public string? ProvisioningState => Properties?.ProvisioningState;
+
+    [NodeProperty("publicNetworkAccess")]
+    [JsonIgnore]
+    public string? PublicNetworkAccess => Properties?.PublicNetworkAccess;
+
+    [NodeProperty("defaultIdentity")]
+    [JsonIgnore]
+    public string? DefaultIdentity => Properties?.DefaultIdentity;
+
+    [NodeProperty("enableFreeTier")]
+    [JsonIgnore]
+    public bool? EnableFreeTier => Properties?.EnableFreeTier;
+
+    [NodeProperty("enableAutomaticFailover")]
+    [JsonIgnore]
+    public bool? EnableAutomaticFailover => Properties?.EnableAutomaticFailover;
+
+    [NodeProperty("enableMultipleWriteLocations")]
+    [JsonIgnore]
+    public bool? EnableMultipleWriteLocations => Properties?.EnableMultipleWriteLocations;
+
+    [NodeProperty("locations")]
+    [JsonIgnore]
+    public string? Locations => Properties?.Locations is { Count: > 0 } locations
+        ? string.Join(", ", locations.Select(location => location.LocationName).Where(name => !string.IsNullOrWhiteSpace(name)))
+        : null;
+
+    [NodeProperty("capabilities")]
+    [JsonIgnore]
+    public string? Capabilities => Properties?.Capabilities is { Count: > 0 } capabilities
+        ? string.Join(", ", capabilities.Select(capability => capability.Name).Where(name => !string.IsNullOrWhiteSpace(name)))
+        : null;
+}
+
+public sealed class CosmosDbAccountProperties
+{
+    [JsonProperty("provisioningState", NullValueHandling = NullValueHandling.Ignore)]
+    public string? ProvisioningState { get; set; }
+
+    [JsonProperty("documentEndpoint", NullValueHandling = NullValueHandling.Ignore)]
+    public string? DocumentEndpoint { get; set; }
+
+    [JsonProperty("databaseAccountOfferType", NullValueHandling = NullValueHandling.Ignore)]
+    public string? DatabaseAccountOfferType { get; set; }
+
+    [JsonProperty("publicNetworkAccess", NullValueHandling = NullValueHandling.Ignore)]
+    public string? PublicNetworkAccess { get; set; }
+
+    [JsonProperty("defaultIdentity", NullValueHandling = NullValueHandling.Ignore)]
+    public string? DefaultIdentity { get; set; }
+
+    [JsonProperty("enableFreeTier", NullValueHandling = NullValueHandling.Ignore)]
+    public bool? EnableFreeTier { get; set; }
+
+    [JsonProperty("enableAutomaticFailover", NullValueHandling = NullValueHandling.Ignore)]
+    public bool? EnableAutomaticFailover { get; set; }
+
+    [JsonProperty("enableMultipleWriteLocations", NullValueHandling = NullValueHandling.Ignore)]
+    public bool? EnableMultipleWriteLocations { get; set; }
+
+    [JsonProperty("locations", NullValueHandling = NullValueHandling.Ignore)]
+    public List<CosmosDbAccountLocation> Locations { get; set; } = [];
+
+    [JsonProperty("capabilities", NullValueHandling = NullValueHandling.Ignore)]
+    public List<CosmosDbAccountCapability> Capabilities { get; set; } = [];
+}
+
+public sealed class CosmosDbAccountLocation
+{
+    [JsonProperty("locationName", NullValueHandling = NullValueHandling.Ignore)]
+    public string? LocationName { get; set; }
+
+    [JsonProperty("failoverPriority", NullValueHandling = NullValueHandling.Ignore)]
+    public int? FailoverPriority { get; set; }
+
+    [JsonProperty("isZoneRedundant", NullValueHandling = NullValueHandling.Ignore)]
+    public bool? IsZoneRedundant { get; set; }
+}
+
+public sealed class CosmosDbAccountCapability
+{
+    [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
+    public string? Name { get; set; }
+}
+
 public sealed class RedisCache : AzureResourceNode
 {
     [NodeProperty("")]

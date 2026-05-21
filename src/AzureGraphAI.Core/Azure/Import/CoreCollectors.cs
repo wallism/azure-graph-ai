@@ -124,6 +124,17 @@ public sealed class ContainerRegistryCollector(
         => AzureApi.GetContainerRegistriesAsync(subscriptionId, cancellationToken);
 }
 
+public sealed class CosmosDbAccountCollector(
+    IAzureRestApi azureApi,
+    ILogger<CosmosDbAccountCollector> logger)
+    : AzureResourceCollectorBase<CosmosDbAccount>(azureApi, logger)
+{
+    public override int Order => 50;
+
+    protected override Task<CallResult<AzureResourceListResult<CosmosDbAccount>>> LoadFirstPageAsync(string subscriptionId, CancellationToken cancellationToken)
+        => AzureApi.GetCosmosDbAccountsAsync(subscriptionId, cancellationToken);
+}
+
 public sealed class RedisCacheCollector(
     IAzureRestApi azureApi,
     ILogger<RedisCacheCollector> logger)

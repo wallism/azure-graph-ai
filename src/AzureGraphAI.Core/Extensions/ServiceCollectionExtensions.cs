@@ -40,6 +40,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAzureResourceCollector, UserAssignedManagedIdentityCollector>();
         services.AddSingleton<IAzureResourceCollector, ServerFarmCollector>();
         services.AddSingleton<IAzureResourceCollector, ContainerRegistryCollector>();
+        services.AddSingleton<IAzureResourceCollector, CosmosDbAccountCollector>();
         services.AddSingleton<IAzureResourceCollector, RedisCacheCollector>();
         services.AddSingleton<IAzureResourceCollector, SqlManagedInstanceCollector>();
         services.AddSingleton<IAzureResourceCollector, ContainerAppCollector>();

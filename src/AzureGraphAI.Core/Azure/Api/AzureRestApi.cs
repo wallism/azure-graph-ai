@@ -19,6 +19,7 @@ public interface IAzureRestApi
     Task<CallResult<AzureResourceListResult<VNet>>> GetVNetsAsync(string subscriptionId, CancellationToken cancellationToken = default);
     Task<CallResult<AzureResourceListResult<ContainerApp>>> GetContainerAppsAsync(string subscriptionId, CancellationToken cancellationToken = default);
     Task<CallResult<AzureResourceListResult<ContainerRegistry>>> GetContainerRegistriesAsync(string subscriptionId, CancellationToken cancellationToken = default);
+    Task<CallResult<AzureResourceListResult<CosmosDbAccount>>> GetCosmosDbAccountsAsync(string subscriptionId, CancellationToken cancellationToken = default);
     Task<CallResult<AzureResourceListResult<RedisCache>>> GetRedisCachesAsync(string subscriptionId, CancellationToken cancellationToken = default);
     Task<CallResult<AzureResourceListResult<SqlManagedInstance>>> GetSqlManagedInstancesAsync(string subscriptionId, CancellationToken cancellationToken = default);
     Task<CallResult<AzureResourceListResult<T>>> GetNextPageAsync<T>(string nextLink, CancellationToken cancellationToken = default)
@@ -43,6 +44,7 @@ public sealed class AzureRestApi : ApiBase, IAzureRestApi
     private readonly ApiMethod<AzureResourceListResult<VNet>> _getVNets;
     private readonly ApiMethod<AzureResourceListResult<ContainerApp>> _getContainerApps;
     private readonly ApiMethod<AzureResourceListResult<ContainerRegistry>> _getContainerRegistries;
+    private readonly ApiMethod<AzureResourceListResult<CosmosDbAccount>> _getCosmosDbAccounts;
     private readonly ApiMethod<AzureResourceListResult<RedisCache>> _getRedisCaches;
     private readonly ApiMethod<AzureResourceListResult<SqlManagedInstance>> _getSqlManagedInstances;
     private readonly ApiMethod<WebAppConfig> _getWebAppConfig;
@@ -69,6 +71,7 @@ public sealed class AzureRestApi : ApiBase, IAzureRestApi
         _getVNets = PrivateGet<AzureResourceListResult<VNet>>(MethodPriority.Normal);
         _getContainerApps = PrivateGet<AzureResourceListResult<ContainerApp>>(MethodPriority.Normal);
         _getContainerRegistries = PrivateGet<AzureResourceListResult<ContainerRegistry>>(MethodPriority.Normal);
+        _getCosmosDbAccounts = PrivateGet<AzureResourceListResult<CosmosDbAccount>>(MethodPriority.Normal);
         _getRedisCaches = PrivateGet<AzureResourceListResult<RedisCache>>(MethodPriority.Normal);
         _getSqlManagedInstances = PrivateGet<AzureResourceListResult<SqlManagedInstance>>(MethodPriority.Normal);
         _getWebAppConfig = PrivateGet<WebAppConfig>(MethodPriority.Normal);
@@ -110,6 +113,9 @@ public sealed class AzureRestApi : ApiBase, IAzureRestApi
 
     public Task<CallResult<AzureResourceListResult<ContainerRegistry>>> GetContainerRegistriesAsync(string subscriptionId, CancellationToken cancellationToken = default)
         => _getContainerRegistries.Call($"{subscriptionId}/providers/Microsoft.ContainerRegistry/registries", "", "api-version=2024-11-01-preview", cancellationToken);
+
+    public Task<CallResult<AzureResourceListResult<CosmosDbAccount>>> GetCosmosDbAccountsAsync(string subscriptionId, CancellationToken cancellationToken = default)
+        => _getCosmosDbAccounts.Call($"{subscriptionId}/providers/Microsoft.DocumentDB/databaseAccounts", "", "api-version=2025-10-15", cancellationToken);
 
     public Task<CallResult<AzureResourceListResult<RedisCache>>> GetRedisCachesAsync(string subscriptionId, CancellationToken cancellationToken = default)
         => _getRedisCaches.Call($"{subscriptionId}/providers/Microsoft.Cache/redis", "", "api-version=2023-08-01", cancellationToken);

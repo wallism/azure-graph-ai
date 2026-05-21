@@ -39,7 +39,7 @@ For local development the importer defaults to `AzureCli`, so it uses your curre
 
 The dry run verifies Neo4j connectivity and loads the configured Azure subscription resource without writing graph nodes or relationships.
 
-The current collectors cover subscriptions, resource groups, VNets, subnets, peerings, storage accounts, key vaults, app service plans, web apps, web jobs, container registries, container apps, Redis caches, and SQL managed instances.
+The current collectors cover subscriptions, resource groups, VNets, subnets, peerings, storage accounts, key vaults, user-assigned managed identities, app service plans, web apps, web jobs, container registries, container apps, Cosmos DB accounts, Redis caches, and SQL managed instances.
 
 ### How Resource Loading Works
 
@@ -73,6 +73,7 @@ Most top-level resource collectors use subscription-scope provider list APIs, fo
 - `/{subscriptionId}/providers/Microsoft.Network/virtualNetworks`
 - `/{subscriptionId}/providers/Microsoft.App/containerApps`
 - `/{subscriptionId}/providers/Microsoft.ContainerRegistry/registries`
+- `/{subscriptionId}/providers/Microsoft.DocumentDB/databaseAccounts`
 - `/{subscriptionId}/providers/Microsoft.Cache/redis`
 - `/{subscriptionId}/providers/Microsoft.Sql/managedInstances`
 
