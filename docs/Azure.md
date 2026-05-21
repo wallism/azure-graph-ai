@@ -2,7 +2,7 @@
 
 ## Configuration
 
-Configure `src/AzureGraphAI.Importer/appsettings.Development.json` or environment variables:
+Configure `src/CloudGraphAI.Importer/appsettings.Development.json` or environment variables:
 
 - `CloudGraph:Providers:Azure:Enabled` set to `true`.
 - `AzureGraph:IncludedSubscriptions`, falling back to `Azure:IncludedSubscriptions`.
@@ -17,8 +17,8 @@ Example:
 ```powershell
 az login
 az account set --subscription <subscription-id>
-dotnet run --project src\AzureGraphAI.Importer\AzureGraphAI.Importer.csproj -- --dry-run
-dotnet run --project src\AzureGraphAI.Importer\AzureGraphAI.Importer.csproj
+dotnet run --project src\CloudGraphAI.Importer\CloudGraphAI.Importer.csproj -- --dry-run
+dotnet run --project src\CloudGraphAI.Importer\CloudGraphAI.Importer.csproj
 ```
 
 For local development the importer defaults to `AzureCli`, so it uses your current Azure CLI login. Service-principal client secret auth is still supported by setting `AzureGraph:Authentication:Mode` to `ClientSecret`.

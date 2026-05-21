@@ -1,16 +1,16 @@
-# azure-graph-ai
+# Cloud Graph AI
 
 Graph cloud resources in Neo4j, then query that graph with an AI console.
 
-Open `src\AzureGraphAI.sln` in Visual Studio.
+Open `src\CloudGraphAI.sln` in Visual Studio.
 
 ## Projects
 
-- `AzureGraphAI.Core`: Azure resource models, Azure REST API clients, collectors, and Azure import orchestration.
-- `AzureGraphAI.GoogleCloud`: Google Cloud resource models, Cloud Asset Inventory client, collectors, and Google Cloud import orchestration.
-- `AzureGraphAI.Importer`: console importer for enabled cloud providers.
-- `AzureGraphAI.AI`: Semantic Kernel chat runner plus guarded Neo4j query tools.
-- `AzureGraphAI.Console`: console app for asking questions about the loaded graph.
+- `CloudGraphAI.Azure`: Azure resource models, Azure REST API clients, collectors, and Azure import orchestration.
+- `CloudGraphAI.GoogleCloud`: Google Cloud resource models, Cloud Asset Inventory client, collectors, and Google Cloud import orchestration.
+- `CloudGraphAI.Importer`: console importer for enabled cloud providers.
+- `CloudGraphAI.AI`: Semantic Kernel chat runner plus guarded Neo4j query tools.
+- `CloudGraphAI.Console`: console app for asking questions about the loaded graph.
 - `Neo4jLiteRepo`: Neo4j access layer. This repo uses the newer copy already in `src`.
 - `Agile.API.Clients`: reusable HTTP/rate-limit/retry client library.
 
@@ -22,7 +22,7 @@ Open `src\AzureGraphAI.sln` in Visual Studio.
 
 ## Quick Start
 
-Configure `src/AzureGraphAI.Importer/appsettings.Development.json` or environment variables, then enable one or both providers:
+Configure `src/CloudGraphAI.Importer/appsettings.Development.json` or environment variables, then enable one or both providers:
 
 ```json
 {
@@ -38,12 +38,12 @@ Configure `src/AzureGraphAI.Importer/appsettings.Development.json` or environmen
 Run a dry run before importing:
 
 ```powershell
-dotnet run --project src\AzureGraphAI.Importer\AzureGraphAI.Importer.csproj -- --dry-run
-dotnet run --project src\AzureGraphAI.Importer\AzureGraphAI.Importer.csproj
+dotnet run --project src\CloudGraphAI.Importer\CloudGraphAI.Importer.csproj -- --dry-run
+dotnet run --project src\CloudGraphAI.Importer\CloudGraphAI.Importer.csproj
 ```
 
 Then query the loaded graph:
 
 ```powershell
-dotnet run --project src\AzureGraphAI.Console\AzureGraphAI.Console.csproj
+dotnet run --project src\CloudGraphAI.Console\CloudGraphAI.Console.csproj
 ```

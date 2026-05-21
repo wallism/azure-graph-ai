@@ -20,12 +20,12 @@ Each provider has its own models and collectors, but both write to the same Neo4
 The dry run verifies Neo4j connectivity and then performs provider-specific read checks without writing graph nodes or relationships:
 
 ```powershell
-dotnet run --project src\AzureGraphAI.Importer\AzureGraphAI.Importer.csproj -- --dry-run
+dotnet run --project src\CloudGraphAI.Importer\CloudGraphAI.Importer.csproj -- --dry-run
 ```
 
 ## Neo4j Configuration
 
-Configure `Neo4jSettings` in `src/AzureGraphAI.Importer/appsettings.Development.json`, `src/AzureGraphAI.Console/appsettings.Development.json`, or environment variables:
+Configure `Neo4jSettings` in `src/CloudGraphAI.Importer/appsettings.Development.json`, `src/CloudGraphAI.Console/appsettings.Development.json`, or environment variables:
 
 - `Neo4jSettings:ConnectionUri`
 - `Neo4jSettings:User`
@@ -36,7 +36,7 @@ The import services enforce unique constraints, upsert all nodes, then upsert al
 
 ## AI Console
 
-Configure `src/AzureGraphAI.Console/appsettings.Development.json` or environment variables:
+Configure `src/CloudGraphAI.Console/appsettings.Development.json` or environment variables:
 
 - `AI:OpenAI:ModelId`
 - `AI:OpenAI:ApiKey` or `OPENAI_API_KEY`
@@ -45,7 +45,7 @@ Configure `src/AzureGraphAI.Console/appsettings.Development.json` or environment
 Then run:
 
 ```powershell
-dotnet run --project src\AzureGraphAI.Console\AzureGraphAI.Console.csproj
+dotnet run --project src\CloudGraphAI.Console\CloudGraphAI.Console.csproj
 ```
 
 The AI console reads from Neo4j only. It does not call Azure or Google Cloud APIs at question time, so Azure CLI or gcloud authentication is not required for the console after the graph has been imported.

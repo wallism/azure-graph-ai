@@ -2,7 +2,7 @@
 
 ## Configuration
 
-Configure `src/AzureGraphAI.Importer/appsettings.Development.json` or environment variables:
+Configure `src/CloudGraphAI.Importer/appsettings.Development.json` or environment variables:
 
 - `CloudGraph:Providers:GoogleCloud:Enabled` set to `true`.
 - `GoogleCloudGraph:IncludedScopes`, using values like `projects/my-project`, `folders/123456789`, or `organizations/123456789`.
@@ -38,8 +38,8 @@ Run:
 
 ```powershell
 gcloud auth login
-dotnet run --project src\AzureGraphAI.Importer\AzureGraphAI.Importer.csproj -- --dry-run
-dotnet run --project src\AzureGraphAI.Importer\AzureGraphAI.Importer.csproj
+dotnet run --project src\CloudGraphAI.Importer\CloudGraphAI.Importer.csproj -- --dry-run
+dotnet run --project src\CloudGraphAI.Importer\CloudGraphAI.Importer.csproj
 ```
 
 No Google Cloud resources are created by the importer. It reads Cloud Asset Inventory metadata and writes only to Neo4j.
