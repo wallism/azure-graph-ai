@@ -17,8 +17,9 @@ Open `src\AzureGraphAI.sln` in Visual Studio.
 
 Configure `src/AzureGraphAI.Importer/appsettings.Development.json` or environment variables:
 
-- `Azure:TenantId`
 - `AzureGraph:IncludedSubscriptions`
+- `AzureGraph:Authentication:Mode` set to `AzureCli` for local `az login` auth, or `ClientSecret` for service-principal auth.
+- `Azure:TenantId` optional for `AzureCli`, required for `ClientSecret`.
 - `APIS:Auth:Microsoft:ClientId`
 - `APIS:Auth:Microsoft:ClientSecret`
 - `Neo4jSettings:ConnectionUri`
@@ -28,8 +29,12 @@ Configure `src/AzureGraphAI.Importer/appsettings.Development.json` or environmen
 Then run:
 
 ```powershell
+az login
+az account set --subscription 38ae1d66-30e9-4ad4-b432-f0386f658e97
 dotnet run --project src\AzureGraphAI.Importer\AzureGraphAI.Importer.csproj
 ```
+
+For local development the importer defaults to `AzureCli`, so it uses your current Azure CLI login. Service-principal client secret auth is still supported by setting `AzureGraph:Authentication:Mode` to `ClientSecret`.
 
 The current collectors cover subscriptions, resource groups, VNets, subnets, peerings, storage accounts, key vaults, app service plans, web apps, web jobs, container registries, container apps, Redis caches, and SQL managed instances.
 
