@@ -26,7 +26,7 @@ public sealed class WebAppCollector(
             return;
 
         await LoadSiteConfigAsync(webApp, subscriptionId, cancellationToken).ConfigureAwait(false);
-        await LoadAppSettingsAsync(webApp, context, subscriptionId, cancellationToken).ConfigureAwait(false);
+        await LoadAppSettingsAsync(webApp, subscriptionId, cancellationToken).ConfigureAwait(false);
         await LoadConnectionStringsAsync(webApp, subscriptionId, cancellationToken).ConfigureAwait(false);
 
         if (_options.IncludeWebJobs && webApp.OperatingSystem.Equals("windows", StringComparison.OrdinalIgnoreCase))
@@ -48,6 +48,11 @@ public sealed class WebAppCollector(
                 context.GetNodes<AzureAIFoundryAccount>(),
                 app.AzureAIFoundryEndpointCandidates);
 
+            KeyVaultReferenceMatcher.AddMatchingVaults(
+                app.KeyVaults,
+                context.GetNodes<KeyVault>(),
+                app.KeyVaultReferenceCandidates);
+
             foreach (var connection in app.ConnectionsTo)
             {
                 switch (connection.Type)
@@ -66,7 +71,10 @@ public sealed class WebAppCollector(
                             sql.Properties?.FullyQualifiedDomainName?.StartsWith($"{connection.Name}.", StringComparison.OrdinalIgnoreCase) == true));
                         break;
                     case AzureConnectedServiceType.KeyVault:
-                        AddIfFound(app.KeyVaults, context.FindByName<KeyVault>(connection.Name));
+                        KeyVaultReferenceMatcher.AddMatchingVaults(
+                            app.KeyVaults,
+                            context.GetNodes<KeyVault>(),
+                            [connection.Name]);
                         break;
                 }
             }
@@ -89,14 +97,17 @@ public sealed class WebAppCollector(
             webApp.Properties!.SiteConfig = result.Value.Value.FirstOrDefault()?.Properties;
     }
 
-    private async Task LoadAppSettingsAsync(WebApp webApp, AzureImportContext context, string subscriptionId, CancellationToken cancellationToken)
+    private async Task LoadAppSettingsAsync(WebApp webApp, string subscriptionId, CancellationToken cancellationToken)
     {
         var result = await AzureApi.GetWebAppSettingsAsync(subscriptionId, webApp, cancellationToken).ConfigureAwait(false);
         if (result is not { WasSuccessful: true, Value: not null })
             return;
 
-        var keyVaultName = result.Value.Properties.GetKeyVaultName("keyVaultBaseUrl", "keyVaultPrefix", "vaultEndPoint", "KeyVaultBaseUrl");
-        AddIfFound(webApp.KeyVaults, context.FindByName<KeyVault>(keyVaultName));
+        foreach (var keyVaultReference in result.Value.Properties.GetSettingValues(_options.KeyVaultReferenceSettingNames))
+        {
+            if (!webApp.KeyVaultReferenceCandidates.Contains(keyVaultReference, StringComparer.OrdinalIgnoreCase))
+                webApp.KeyVaultReferenceCandidates.Add(keyVaultReference);
+        }
 
         foreach (var endpoint in result.Value.Properties.GetSettingValues(_options.AzureAIFoundryEndpointSettingNames))
         {

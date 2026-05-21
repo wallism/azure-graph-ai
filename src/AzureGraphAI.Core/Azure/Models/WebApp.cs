@@ -52,6 +52,9 @@ public sealed class WebApp : AzureResourceNode
     public List<ConnectionToService> ConnectionsTo { get; } = [];
 
     [JsonIgnore]
+    public List<string> KeyVaultReferenceCandidates { get; } = [];
+
+    [JsonIgnore]
     public List<string> AzureAIFoundryEndpointCandidates { get; } = [];
 
     public static class Edges

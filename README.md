@@ -115,6 +115,16 @@ Web Apps and Container Apps can be related to Azure AI Foundry accounts with `CO
 - `AzureAI:FoundryEndpoint`
 - `FoundryEndpoint`
 
+Web Apps can also be related to Key Vaults with `CONNECTS_TO_KEYVAULT`. The importer checks configured app setting names under `AzureGraph:KeyVaultReferenceSettingNames`, then matches the setting values against loaded Key Vault resource names and `properties.vaultUri` values. The default starting list is:
+
+- `keyVaultBaseUrl`
+- `KeyVaultBaseUrl`
+- `KeyVaultUri`
+- `KeyVaultUrl`
+- `vaultEndPoint`
+- `VaultEndpoint`
+- `keyVaultPrefix`
+
 ## Environments
 
 Environment is intentionally an optional enrichment, not a core Azure resource concept. Configure project-specific rules under `AzureGraph:EnvironmentRules`; matching resources get an `environment` graph property. If no rule matches, no environment value is written.

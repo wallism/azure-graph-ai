@@ -18,6 +18,17 @@ public sealed class AzureGraphOptions
         "FoundryEndpoint"
     ];
 
+    public List<string> KeyVaultReferenceSettingNames { get; set; } =
+    [
+        "keyVaultBaseUrl",
+        "KeyVaultBaseUrl",
+        "KeyVaultUri",
+        "KeyVaultUrl",
+        "vaultEndPoint",
+        "VaultEndpoint",
+        "keyVaultPrefix"
+    ];
+
     public List<EnvironmentRule> EnvironmentRules { get; set; } = [];
 }
 
