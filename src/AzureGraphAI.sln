@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureGraphAI.Importer", "Az
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureGraphAI.Console", "AzureGraphAI.Console\AzureGraphAI.Console.csproj", "{3989D5B4-7CD6-420F-922F-B54216AB4F24}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureGraphAI.GoogleCloud", "AzureGraphAI.GoogleCloud\AzureGraphAI.GoogleCloud.csproj", "{F775B1B4-6BB0-4F01-AAD8-674C33C30D2D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -97,6 +99,18 @@ Global
 		{3989D5B4-7CD6-420F-922F-B54216AB4F24}.Release|x64.Build.0 = Release|Any CPU
 		{3989D5B4-7CD6-420F-922F-B54216AB4F24}.Release|x86.ActiveCfg = Release|Any CPU
 		{3989D5B4-7CD6-420F-922F-B54216AB4F24}.Release|x86.Build.0 = Release|Any CPU
+		{F775B1B4-6BB0-4F01-AAD8-674C33C30D2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F775B1B4-6BB0-4F01-AAD8-674C33C30D2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F775B1B4-6BB0-4F01-AAD8-674C33C30D2D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F775B1B4-6BB0-4F01-AAD8-674C33C30D2D}.Debug|x64.Build.0 = Debug|Any CPU
+		{F775B1B4-6BB0-4F01-AAD8-674C33C30D2D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F775B1B4-6BB0-4F01-AAD8-674C33C30D2D}.Debug|x86.Build.0 = Debug|Any CPU
+		{F775B1B4-6BB0-4F01-AAD8-674C33C30D2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F775B1B4-6BB0-4F01-AAD8-674C33C30D2D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F775B1B4-6BB0-4F01-AAD8-674C33C30D2D}.Release|x64.ActiveCfg = Release|Any CPU
+		{F775B1B4-6BB0-4F01-AAD8-674C33C30D2D}.Release|x64.Build.0 = Release|Any CPU
+		{F775B1B4-6BB0-4F01-AAD8-674C33C30D2D}.Release|x86.ActiveCfg = Release|Any CPU
+		{F775B1B4-6BB0-4F01-AAD8-674C33C30D2D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

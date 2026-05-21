@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AzureGraphAI.Core\AzureGraphAI.Core.csproj" />
+    <ProjectReference Include="..\AzureGraphAI.GoogleCloud\AzureGraphAI.GoogleCloud.csproj" />
   </ItemGroup>
 
   <ItemGroup>

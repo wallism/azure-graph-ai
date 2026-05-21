@@ -11,6 +11,9 @@ namespace AzureGraphAI.AI.Extensions;
 public static class KernelBuilderExtensions
 {
     public static IKernelBuilder AddAzureGraphNeo4jTools(this IKernelBuilder builder, IConfiguration configuration)
+        => builder.AddCloudGraphNeo4jTools(configuration);
+
+    public static IKernelBuilder AddCloudGraphNeo4jTools(this IKernelBuilder builder, IConfiguration configuration)
     {
         builder.Services.AddSingleton(configuration);
         builder.Services.AddSingleton<IDriver>(_ =>

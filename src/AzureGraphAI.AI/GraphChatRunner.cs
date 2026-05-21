@@ -53,7 +53,7 @@ public sealed class GraphChatRunner(IConfiguration configuration) : IGraphChatRu
     }
 
     private const string DefaultSystemPrompt = """
-        You answer questions about Azure resources stored in Neo4j.
+        You answer questions about cloud resources stored in Neo4j.
         Inspect the graph schema when needed, write read-only Cypher, execute it with the Neo4j tool, then answer from the returned rows.
         Do not guess when the graph does not contain enough data. Do not attempt writes or database administration commands.
         Prefer concise answers that mention the resource names and the relationship path that supports the answer.

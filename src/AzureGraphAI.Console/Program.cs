@@ -38,7 +38,7 @@ kernelBuilder.Services.AddLogging(logging => logging.AddSimpleConsole(options =>
 }));
 kernelBuilder.Services.AddSingleton(builder.Configuration);
 kernelBuilder.AddOpenAIChatCompletion(modelId, apiKey);
-kernelBuilder.AddAzureGraphNeo4jTools(builder.Configuration);
+kernelBuilder.AddCloudGraphNeo4jTools(builder.Configuration);
 
 var kernel = kernelBuilder.Build();
 var runner = kernel.GetRequiredService<IGraphChatRunner>();
