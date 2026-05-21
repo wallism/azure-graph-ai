@@ -26,15 +26,15 @@ public sealed class UserAssignedManagedIdentity : AzureResourceNode
 
     [NodeProperty("principalId")]
     [JsonIgnore]
-    public Guid? PrincipalId => Properties?.PrincipalId;
+    public string? PrincipalId => Properties?.PrincipalId?.ToString();
 
     [NodeProperty("clientId")]
     [JsonIgnore]
-    public Guid? ClientId => Properties?.ClientId;
+    public string? ClientId => Properties?.ClientId?.ToString();
 
     [NodeProperty("tenantId")]
     [JsonIgnore]
-    public Guid? TenantId => Properties?.TenantId;
+    public string? TenantId => Properties?.TenantId?.ToString();
 
     [NodeProperty("isolationScope")]
     [JsonIgnore]
@@ -149,9 +149,12 @@ public sealed class KeyVault : AzureResourceNode
 
 public sealed class KeyVaultProperties
 {
-    [NodeProperty("tenantId")]
     [JsonProperty("tenantId", NullValueHandling = NullValueHandling.Ignore)]
     public Guid? TenantId { get; set; }
+
+    [NodeProperty("tenantId")]
+    [JsonIgnore]
+    public string? TenantIdValue => TenantId?.ToString();
 
     [NodeProperty("vaultUri")]
     [JsonProperty("vaultUri", NullValueHandling = NullValueHandling.Ignore)]

@@ -28,11 +28,11 @@ public abstract class AzureResourceNode : AzureGraphNode, IEnvironmentAnnotatedR
 
     [NodeProperty("identityPrincipalId")]
     [JsonIgnore]
-    public Guid? IdentityPrincipalId => Identity?.PrincipalId;
+    public string? IdentityPrincipalId => Identity?.PrincipalId?.ToString();
 
     [NodeProperty("identityTenantId")]
     [JsonIgnore]
-    public Guid? IdentityTenantId => Identity?.TenantId;
+    public string? IdentityTenantId => Identity?.TenantId?.ToString();
 
     [NodeProperty("subscriptionId")]
     [JsonIgnore]

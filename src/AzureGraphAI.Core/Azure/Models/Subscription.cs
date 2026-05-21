@@ -9,9 +9,12 @@ public sealed class Subscription : AzureGraphNode
     [JsonProperty("subscriptionId", NullValueHandling = NullValueHandling.Ignore)]
     public string? AzureSubscriptionId { get; set; }
 
-    [NodeProperty("tenantId")]
     [JsonProperty("tenantId", NullValueHandling = NullValueHandling.Ignore)]
     public Guid? TenantId { get; set; }
+
+    [NodeProperty("tenantId")]
+    [JsonIgnore]
+    public string? TenantIdValue => TenantId?.ToString();
 
     [NodeProperty("subscriptionState")]
     [JsonProperty("state", NullValueHandling = NullValueHandling.Ignore)]
