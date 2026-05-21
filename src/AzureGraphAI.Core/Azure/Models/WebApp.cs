@@ -45,8 +45,14 @@ public sealed class WebApp : AzureResourceNode
     [NodeRelationship<SqlManagedInstance>(Edges.ConnectsToSqlManagedInstance)]
     public List<string> SqlManagedInstances { get; set; } = [];
 
+    [NodeRelationship<AzureAIFoundryAccount>(Edges.ConnectsToAzureAIFoundry)]
+    public List<string> AzureAIFoundryAccounts { get; set; } = [];
+
     [JsonIgnore]
     public List<ConnectionToService> ConnectionsTo { get; } = [];
+
+    [JsonIgnore]
+    public List<string> AzureAIFoundryEndpointCandidates { get; } = [];
 
     public static class Edges
     {
@@ -56,6 +62,7 @@ public sealed class WebApp : AzureResourceNode
         public const string ConnectsToStorage = "CONNECTS_TO_STORAGE";
         public const string ConnectsToRedis = "CONNECTS_TO_REDIS";
         public const string ConnectsToSqlManagedInstance = "CONNECTS_TO_SQLMI";
+        public const string ConnectsToAzureAIFoundry = "CONNECTS_TO_AI_FOUNDRY";
     }
 }
 

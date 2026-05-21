@@ -43,6 +43,11 @@ public sealed class WebAppCollector(
             if (!string.IsNullOrWhiteSpace(app.Properties?.VirtualNetworkSubnetId))
                 app.DeployedInSubnets = [app.Properties.VirtualNetworkSubnetId];
 
+            AzureAIFoundryEndpointMatcher.AddMatchingAccounts(
+                app.AzureAIFoundryAccounts,
+                context.GetNodes<AzureAIFoundryAccount>(),
+                app.AzureAIFoundryEndpointCandidates);
+
             foreach (var connection in app.ConnectionsTo)
             {
                 switch (connection.Type)
@@ -92,6 +97,12 @@ public sealed class WebAppCollector(
 
         var keyVaultName = result.Value.Properties.GetKeyVaultName("keyVaultBaseUrl", "keyVaultPrefix", "vaultEndPoint", "KeyVaultBaseUrl");
         AddIfFound(webApp.KeyVaults, context.FindByName<KeyVault>(keyVaultName));
+
+        foreach (var endpoint in result.Value.Properties.GetSettingValues(_options.AzureAIFoundryEndpointSettingNames))
+        {
+            if (!webApp.AzureAIFoundryEndpointCandidates.Contains(endpoint, StringComparer.OrdinalIgnoreCase))
+                webApp.AzureAIFoundryEndpointCandidates.Add(endpoint);
+        }
     }
 
     private async Task LoadConnectionStringsAsync(WebApp webApp, string subscriptionId, CancellationToken cancellationToken)

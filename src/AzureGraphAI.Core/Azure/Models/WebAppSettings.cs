@@ -31,6 +31,22 @@ public sealed class AppSettingProperties
         return string.Empty;
     }
 
+    public IReadOnlyList<string> GetSettingValues(IEnumerable<string> possibleSettingNames)
+    {
+        var values = new List<string>();
+        foreach (var settingName in possibleSettingNames)
+        {
+            if (AdditionalProperties.TryGetValue(settingName, out var value) && value.Type != JTokenType.Null)
+            {
+                var raw = value.ToString();
+                if (!string.IsNullOrWhiteSpace(raw))
+                    values.Add(raw);
+            }
+        }
+
+        return values.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+    }
+
     public string GetKeyVaultName(params string[] possibleSettingNames)
         => KeyVault.GetKeyVaultName(GetSettingValue(possibleSettingNames));
 }

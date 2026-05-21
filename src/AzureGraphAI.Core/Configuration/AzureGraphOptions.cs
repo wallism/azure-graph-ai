@@ -10,6 +10,14 @@ public sealed class AzureGraphOptions
 
     public bool IncludeWebJobs { get; set; } = true;
 
+    public List<string> AzureAIFoundryEndpointSettingNames { get; set; } =
+    [
+        "AzureAIFoundry:Endpoint",
+        "AzureAIFoundry__Endpoint",
+        "AzureAI:FoundryEndpoint",
+        "FoundryEndpoint"
+    ];
+
     public List<EnvironmentRule> EnvironmentRules { get; set; } = [];
 }
 

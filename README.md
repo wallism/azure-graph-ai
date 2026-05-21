@@ -108,6 +108,13 @@ This means adding support for a new Azure resource type is deliberate: add a mod
 
 Azure AI Foundry accounts are represented by `Microsoft.CognitiveServices/accounts`. The importer saves `properties.endpoint` as both `endpoint` and `boundaryApiEndpoint` graph properties so questions can target the data-plane/API boundary endpoint directly.
 
+Web Apps and Container Apps can be related to Azure AI Foundry accounts with `CONNECTS_TO_AI_FOUNDRY`. Web Apps use values from app settings. Container Apps use environment variable values present in the container app ARM response. The setting names are configurable under `AzureGraph:AzureAIFoundryEndpointSettingNames`; the default starting list is:
+
+- `AzureAIFoundry:Endpoint`
+- `AzureAIFoundry__Endpoint`
+- `AzureAI:FoundryEndpoint`
+- `FoundryEndpoint`
+
 ## Environments
 
 Environment is intentionally an optional enrichment, not a core Azure resource concept. Configure project-specific rules under `AzureGraph:EnvironmentRules`; matching resources get an `environment` graph property. If no rule matches, no environment value is written.

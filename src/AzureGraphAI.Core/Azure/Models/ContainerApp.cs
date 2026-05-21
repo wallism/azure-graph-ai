@@ -12,6 +12,9 @@ public sealed class ContainerApp : AzureResourceNode
     [NodeRelationship<ContainerRegistry>(Edges.PullsFromRegistry)]
     public List<string> PullsFromRegistries { get; set; } = [];
 
+    [NodeRelationship<AzureAIFoundryAccount>(Edges.ConnectsToAzureAIFoundry)]
+    public List<string> AzureAIFoundryAccounts { get; set; } = [];
+
     [NodeProperty("runningStatus")]
     [JsonIgnore]
     public string? RunningStatus => Properties?.RunningStatus;
@@ -23,6 +26,7 @@ public sealed class ContainerApp : AzureResourceNode
     public static class Edges
     {
         public const string PullsFromRegistry = "PULLS_FROM_REGISTRY";
+        public const string ConnectsToAzureAIFoundry = "CONNECTS_TO_AI_FOUNDRY";
     }
 }
 
@@ -90,6 +94,21 @@ public sealed class ContainerAppContainer
 
     [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
     public string? Name { get; set; }
+
+    [JsonProperty("env", NullValueHandling = NullValueHandling.Ignore)]
+    public List<ContainerAppEnvironmentVariable> Env { get; set; } = [];
+}
+
+public sealed class ContainerAppEnvironmentVariable
+{
+    [JsonProperty("name", NullValueHandling = NullValueHandling.Ignore)]
+    public string? Name { get; set; }
+
+    [JsonProperty("value", NullValueHandling = NullValueHandling.Ignore)]
+    public string? Value { get; set; }
+
+    [JsonProperty("secretRef", NullValueHandling = NullValueHandling.Ignore)]
+    public string? SecretRef { get; set; }
 }
 
 public sealed class ContainerAppScale
