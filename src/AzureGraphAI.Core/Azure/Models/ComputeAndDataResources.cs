@@ -301,6 +301,102 @@ public sealed class CosmosDbAccountCapability
     public string? Name { get; set; }
 }
 
+public sealed class AzureAIFoundryAccount : AzureResourceNode
+{
+    [NodeProperty("kind")]
+    [JsonProperty("kind", NullValueHandling = NullValueHandling.Ignore)]
+    public string? Kind { get; set; }
+
+    [NodeProperty("")]
+    [JsonProperty("sku", NullValueHandling = NullValueHandling.Ignore)]
+    public Sku? Sku { get; set; }
+
+    [NodeProperty("")]
+    [JsonProperty("properties", NullValueHandling = NullValueHandling.Ignore)]
+    public AzureAIFoundryAccountProperties? Properties { get; set; }
+
+    [NodeProperty("endpoint")]
+    [JsonIgnore]
+    public string? Endpoint => Properties?.Endpoint;
+
+    [NodeProperty("boundaryApiEndpoint")]
+    [JsonIgnore]
+    public string? BoundaryApiEndpoint => Properties?.Endpoint;
+
+    [NodeProperty("customSubDomainName")]
+    [JsonIgnore]
+    public string? CustomSubDomainName => Properties?.CustomSubDomainName;
+
+    [NodeProperty("provisioningState")]
+    [JsonIgnore]
+    public string? ProvisioningState => Properties?.ProvisioningState;
+
+    [NodeProperty("publicNetworkAccess")]
+    [JsonIgnore]
+    public string? PublicNetworkAccess => Properties?.PublicNetworkAccess;
+
+    [NodeProperty("allowProjectManagement")]
+    [JsonIgnore]
+    public bool? AllowProjectManagement => Properties?.AllowProjectManagement;
+
+    [NodeProperty("defaultProject")]
+    [JsonIgnore]
+    public string? DefaultProject => Properties?.DefaultProject;
+
+    [NodeProperty("disableLocalAuth")]
+    [JsonIgnore]
+    public bool? DisableLocalAuth => Properties?.DisableLocalAuth;
+
+    [NodeProperty("restrictOutboundNetworkAccess")]
+    [JsonIgnore]
+    public bool? RestrictOutboundNetworkAccess => Properties?.RestrictOutboundNetworkAccess;
+
+    [NodeProperty("associatedProjects")]
+    [JsonIgnore]
+    public string? AssociatedProjects => Properties?.AssociatedProjects is { Count: > 0 } projects
+        ? string.Join(", ", projects)
+        : null;
+
+    [NodeProperty("allowedFqdns")]
+    [JsonIgnore]
+    public string? AllowedFqdns => Properties?.AllowedFqdnList is { Count: > 0 } fqdns
+        ? string.Join(", ", fqdns)
+        : null;
+}
+
+public sealed class AzureAIFoundryAccountProperties
+{
+    [JsonProperty("endpoint", NullValueHandling = NullValueHandling.Ignore)]
+    public string? Endpoint { get; set; }
+
+    [JsonProperty("customSubDomainName", NullValueHandling = NullValueHandling.Ignore)]
+    public string? CustomSubDomainName { get; set; }
+
+    [JsonProperty("provisioningState", NullValueHandling = NullValueHandling.Ignore)]
+    public string? ProvisioningState { get; set; }
+
+    [JsonProperty("publicNetworkAccess", NullValueHandling = NullValueHandling.Ignore)]
+    public string? PublicNetworkAccess { get; set; }
+
+    [JsonProperty("allowProjectManagement", NullValueHandling = NullValueHandling.Ignore)]
+    public bool? AllowProjectManagement { get; set; }
+
+    [JsonProperty("defaultProject", NullValueHandling = NullValueHandling.Ignore)]
+    public string? DefaultProject { get; set; }
+
+    [JsonProperty("disableLocalAuth", NullValueHandling = NullValueHandling.Ignore)]
+    public bool? DisableLocalAuth { get; set; }
+
+    [JsonProperty("restrictOutboundNetworkAccess", NullValueHandling = NullValueHandling.Ignore)]
+    public bool? RestrictOutboundNetworkAccess { get; set; }
+
+    [JsonProperty("associatedProjects", NullValueHandling = NullValueHandling.Ignore)]
+    public List<string> AssociatedProjects { get; set; } = [];
+
+    [JsonProperty("allowedFqdnList", NullValueHandling = NullValueHandling.Ignore)]
+    public List<string> AllowedFqdnList { get; set; } = [];
+}
+
 public sealed class RedisCache : AzureResourceNode
 {
     [NodeProperty("")]

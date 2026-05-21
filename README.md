@@ -39,7 +39,7 @@ For local development the importer defaults to `AzureCli`, so it uses your curre
 
 The dry run verifies Neo4j connectivity and loads the configured Azure subscription resource without writing graph nodes or relationships.
 
-The current collectors cover subscriptions, resource groups, VNets, subnets, peerings, storage accounts, key vaults, user-assigned managed identities, app service plans, web apps, web jobs, container registries, container apps, Cosmos DB accounts, Redis caches, and SQL managed instances.
+The current collectors cover subscriptions, resource groups, VNets, subnets, peerings, storage accounts, key vaults, user-assigned managed identities, app service plans, web apps, web jobs, container registries, container apps, Cosmos DB accounts, Azure AI Foundry accounts, Redis caches, and SQL managed instances.
 
 ### How Resource Loading Works
 
@@ -74,6 +74,7 @@ Most top-level resource collectors use subscription-scope provider list APIs, fo
 - `/{subscriptionId}/providers/Microsoft.App/containerApps`
 - `/{subscriptionId}/providers/Microsoft.ContainerRegistry/registries`
 - `/{subscriptionId}/providers/Microsoft.DocumentDB/databaseAccounts`
+- `/{subscriptionId}/providers/Microsoft.CognitiveServices/accounts`
 - `/{subscriptionId}/providers/Microsoft.Cache/redis`
 - `/{subscriptionId}/providers/Microsoft.Sql/managedInstances`
 
@@ -86,6 +87,8 @@ Some child or detail resources are loaded differently:
 - Container apps are loaded from the subscription-level Container Apps endpoint, then related to registries from their registry configuration.
 
 This means adding support for a new Azure resource type is deliberate: add a model, add an API method, add/register a collector, and add relationship-building logic where that resource references or is referenced by other resources.
+
+Azure AI Foundry accounts are represented by `Microsoft.CognitiveServices/accounts`. The importer saves `properties.endpoint` as both `endpoint` and `boundaryApiEndpoint` graph properties so questions can target the data-plane/API boundary endpoint directly.
 
 ## Environments
 
