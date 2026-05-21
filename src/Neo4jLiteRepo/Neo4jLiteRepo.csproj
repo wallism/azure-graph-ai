@@ -1,0 +1,48 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Neo4jLiteRepo.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="artifacts\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Queries\CreateVectorIndexForEmbeddings.cypher" />
+    <None Remove="Queries\ExecuteVectorSimilaritySearch.cypher" />
+    <None Remove="Queries\ExecuteVectorSimilaritySearchStructured.cypher" />
+    <None Remove="Queries\GetAllNodesAndRelationships.cypher" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Queries\CreateVectorIndexForEmbeddings.cypher">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Queries\ExecuteVectorSimilaritySearch.cypher">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Queries\ExecuteVectorSimilaritySearchStructured.cypher">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Queries\GetAllNodesAndRelationships.cypher">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
+    <PackageReference Include="Neo4j.Driver" Version="6.1.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+  </ItemGroup>
+
+</Project>

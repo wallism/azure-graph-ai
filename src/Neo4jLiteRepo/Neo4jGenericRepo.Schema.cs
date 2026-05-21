@@ -1,0 +1,338 @@
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Neo4j.Driver;
+using Neo4jLiteRepo.Exceptions;
+using Neo4jLiteRepo.Models;
+using Neo4jLiteRepo.NodeServices;
+using System.Text.Json;
+
+namespace Neo4jLiteRepo;
+
+/// <summary>
+/// Schema and index operations for Neo4j.
+/// </summary>
+public partial class Neo4jGenericRepo
+{
+    #region EnforceUniqueConstraints
+
+    /// <inheritdoc/>
+    public async Task<bool> EnforceUniqueConstraints(IEnumerable<INodeService> nodeServices)
+    {
+        await using var session = StartSession();
+        foreach (var nodeService in nodeServices)
+        {
+            if (!nodeService.EnforceUniqueConstraint)
+                continue;
+
+            var type = nodeService.GetType();
+
+            // Get the base type (e.g FileNodeService<Movie>)
+            var baseType = type.BaseType;
+            if (baseType == null || !baseType.IsGenericType)
+                continue;
+            var genericType = baseType.GetGenericArguments()[0]; // e.g. typeof(Movie)
+            if (Activator.CreateInstance(genericType) is GraphNode instance)
+            {
+                var query = GetUniqueConstraintCypher(instance);
+                await ExecuteWriteQuery(session, query);
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Enforces a unique constraint on a node
+    /// </summary>
+    private string GetUniqueConstraintCypher<T>(T node) where T : GraphNode
+    {
+        _logger.LogInformation("CREATE UNIQUE CONSTRAINT {node}", node.LabelName);
+        return $"""
+                CREATE CONSTRAINT {node.LabelName.ToLower()}_{node.GetPrimaryKeyName().ToLower()}_is_unique IF NOT EXISTS
+                FOR (n:{node.LabelName})
+                REQUIRE n.{node.GetPrimaryKeyName()} IS UNIQUE
+                """;
+    }
+
+    #endregion
+
+    #region EnforceUniqueConstraintsForAllGraphNodes
+
+    /// <summary>
+    /// Discovers all GraphNode implementations and enforces unique constraints for those that require it.
+    /// Call this at system startup to ensure all unique constraints are in place.
+    /// </summary>
+    /// <param name="assemblies">Optional list of assemblies to scan. If null, scans all loaded assemblies.</param>
+    /// <returns>True if all constraints were successfully created.</returns>
+    public async Task<bool> EnforceUniqueConstraintsForAllGraphNodes(IEnumerable<System.Reflection.Assembly>? assemblies = null)
+    {
+        await using var session = StartSession();
+        
+        // Get all assemblies to scan
+        var assembliesToScan = assemblies?.ToList() ?? AppDomain.CurrentDomain.GetAssemblies().ToList();
+        
+        // Find all types that inherit from GraphNode
+        var graphNodeTypes = assembliesToScan
+            .SelectMany(a =>
+            {
+                try
+                {
+                    return a.GetTypes();
+                }
+                catch (System.Reflection.ReflectionTypeLoadException)
+                {
+                    // Skip assemblies that can't be loaded
+                    return [];
+                }
+            })
+            .Where(t => t.IsClass && !t.IsAbstract && t.IsSubclassOf(typeof(GraphNode)))
+            .ToList();
+
+        _logger.LogInformation("Found {Count} GraphNode types to evaluate for unique constraints", graphNodeTypes.Count);
+
+        var constraintsCreated = 0;
+        foreach (var nodeType in graphNodeTypes)
+        {
+            try
+            {
+                // Create an instance to check if it requires unique constraint
+                if (Activator.CreateInstance(nodeType) is GraphNode instance)
+                {
+                    if (instance.EnforceUniqueConstraint)
+                    {
+                        var query = GetUniqueConstraintCypher(instance);
+                        await ExecuteWriteQuery(session, query);
+                        constraintsCreated++;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to create unique constraint for node type {NodeType}", nodeType.Name);
+                return false;
+            }
+        }
+
+        _logger.LogInformation("Successfully created/verified {Count} unique constraints", constraintsCreated);
+        return true;
+    }
+
+    #endregion
+
+    #region CheckMissingConstraintsAsync
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyList<string>> CheckMissingConstraintsAsync(IEnumerable<System.Reflection.Assembly>? assemblies = null)
+    {
+        // Query names of all existing constraints from Neo4j
+        var existingNames = (await ExecuteReadListStringsAsync("SHOW CONSTRAINTS YIELD name", "name"))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        // Derive expected constraint names from all concrete GraphNode subclasses
+        var assembliesToScan = assemblies?.ToList() ?? AppDomain.CurrentDomain.GetAssemblies().ToList();
+        var graphNodeTypes = assembliesToScan
+            .SelectMany(a =>
+            {
+                try { return a.GetTypes(); }
+                catch (System.Reflection.ReflectionTypeLoadException) { return []; }
+            })
+            .Where(t => t.IsClass && !t.IsAbstract && t.IsSubclassOf(typeof(GraphNode)))
+            .ToList();
+
+        var missing = new List<string>();
+        foreach (var nodeType in graphNodeTypes)
+        {
+            try
+            {
+                if (Activator.CreateInstance(nodeType) is GraphNode instance && instance.EnforceUniqueConstraint)
+                {
+                    // Must match the naming pattern in GetUniqueConstraintCypher
+                    var expectedName = $"{instance.LabelName.ToLower()}_{instance.GetPrimaryKeyName().ToLower()}_is_unique";
+                    if (!existingNames.Contains(expectedName))
+                        missing.Add(expectedName);
+                }
+            }
+            catch
+            {
+                // Skip types that cannot be instantiated (missing deps, not concrete, etc.)
+            }
+        }
+
+        return missing;
+    }
+
+    #endregion
+
+    #region CreateVectorIndexForEmbeddings
+
+    /// <summary>
+    /// Allows for multiple nodes having embeddings and vector indexes,
+    /// however one is usually better when searching for semantic meaning across all data.
+    /// </summary>
+    /// <remarks>the nodes must have an "embedding" property.
+    /// note: defaults to 3072 dimensions (for text-embedding-3-large).</remarks>
+    public async Task<bool> CreateVectorIndexForEmbeddings(IList<string>? labelNames = null, int dimensions = 3072)
+    {
+        if (labelNames is null || !labelNames.Any())
+            return true;
+
+        /*
+         * text-embedding-3-large | 3072 dimensions
+         * text-embedding-ada-002 | 1536 dimensions
+         * Important: If the embedding model changes, the index MUST be dropped and rebuilt!
+         *
+         * todo: auto set the dimensions based on the embedding model (used in AI layer)
+         */
+
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        await using var session = StartSession();
+        try
+        {
+            var cypherTemplate = await GetCypherFromFile("CreateVectorIndexForEmbeddings.cypher", _logger);
+            foreach (var labelName in labelNames)
+            {
+                var cypher = cypherTemplate
+                    .Replace("{labelName}", labelName.ToLower())
+                    .Replace("{dimensions}", dimensions.ToString());
+                await ExecuteWriteQuery(session, cypher);
+            }
+
+            sw.Stop();
+            _logger.LogInformation("CreateVectorIndexForEmbeddings completed in {ElapsedMs}ms for {LabelCount} labels", sw.ElapsedMilliseconds, labelNames.Count);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to create vector index for embeddings");
+            return false;
+        }
+    }
+
+    #endregion
+
+    #region GetGraphMapAsJsonAsync
+
+    /// <inheritdoc />
+    public async Task<string> GetGraphMapAsJsonAsync()
+    {
+        try
+        {
+            // Get current node types and relationships from the database
+            var graphStructure = await GetAllNodesAndEdgesAsync();
+
+            // Create a structured object with the graph information
+            var finalStructure = new
+            {
+                GlobalProperties = (string[])["displayName", "upserted"],
+                NodeTypes = graphStructure.NodeTypes.Select(n => new
+                {
+                    Name = n.NodeType,
+                    OutgoingRelationships = n.OutgoingRelationships,
+                    IncomingRelationships = n.IncomingRelationships
+                }).ToList()
+            };
+            // Serialize to JSON with minimal indentation
+            var result = JsonSerializer.Serialize(finalStructure, new JsonSerializerOptions
+            {
+                WriteIndented = false
+            });
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "GetGraphDbNodesAndEdgesJsonAsync");
+
+            // default to a minimal structure
+            var structure = $$""" 
+                              {
+                                  "GlobalProperties": [ "displayName", "upserted" ],
+                                  "NodeTypes": [ ]
+                              }
+                              """;
+            // Serialize to JSON with minimal indentation
+            var result = JsonSerializer.Serialize(structure, new JsonSerializerOptions
+            {
+                WriteIndented = false
+            });
+
+            return result;
+        }
+    }
+
+    #endregion
+
+    #region GetAllNodesAndEdgesAsync
+
+    /// <summary>
+    /// Get a list of the names of all labels (node types) and their edges (in and out).
+    /// Not any node data, just the types and relationships.
+    /// </summary>
+    /// <remarks>Ensure the session is appropriately disposed of! Caller Responsibility.</remarks>
+    /// <returns>Useful if you want to feed your graph map into AI</returns>
+    public async Task<NodeRelationshipsResponse> GetAllNodesAndEdgesAsync()
+    {
+        await using var session = StartSession();
+        return await GetAllNodesAndEdgesAsync(session);
+    }
+
+    /// <summary>
+    /// Get a list of the names of all labels (node types) and their edges (in and out).
+    /// Not any node data, just the types and relationships.
+    /// </summary>
+    /// <remarks>Ensure the session is appropriately disposed of! Caller Responsibility.</remarks>
+    /// <returns>Useful if you want to feed your graph map into AI</returns>
+    public async Task<NodeRelationshipsResponse> GetAllNodesAndEdgesAsync(IAsyncSession session)
+    {
+        if (session == null) throw new ArgumentNullException(nameof(session));
+        // why exclude? I pass the result into AI to help it gen cypher. If a rel exists on many NodeType's, to minimize noise (and cost) I pass this instead: 
+        // example: "GlobalOutgoingRelationships": ["IN_GROUP"]
+        var excludedOutRelationships = _config.GetSection("Neo4jLiteRepo:GetNodesAndRelationships:excludedOutRelationships")
+            .Get<List<string>>() ?? [];
+        var excludedInRelationships = _config.GetSection("Neo4jLiteRepo:GetNodesAndRelationships:excludedInRelationships")
+            .Get<List<string>>() ?? [];
+
+        // Create a parameters dictionary
+        var parameters = new Dictionary<string, object>
+        {
+            { "excludedOutRels", excludedOutRelationships },
+            { "excludedInRels", excludedInRelationships }
+        };
+
+        var query = await GetCypherFromFile("GetAllNodesAndRelationships.cypher", _logger);
+
+        IResultCursor cursor;
+        try
+        {
+            cursor = await RunWithTimeoutAsync(session, query, parameters);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Problem running GetNodesAndRelationships query. QueryLength={QueryLength} ParamKeys={ParamKeys}", query.Length, string.Join(',', parameters.Keys));
+            throw CreateRepositoryException("Get nodes and relationships failed.", query, parameters.Keys, ex);
+        }
+
+        try
+        {
+            var records = await cursor.ToListAsync();
+            var response = new NodeRelationshipsResponse
+            {
+                QueriedAt = DateTimeOffset.UtcNow,
+                NodeTypes = records.Select(record => new NodeRelationshipInfo
+                {
+                    NodeType = record["NodeType"].As<string>(),
+                    OutgoingRelationships = record["OutgoingRelationships"].As<List<string>>(),
+                    IncomingRelationships = record["IncomingRelationships"].As<List<string>>()
+                }).ToList()
+            };
+            return response;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Problem materializing records for GetNodesAndRelationships. QueryLength={QueryLength}", query.Length);
+            throw CreateRepositoryException("Get nodes and relationships materialization failed.", query, parameters.Keys, ex);
+        }
+    }
+
+    #endregion
+}
