@@ -17,6 +17,9 @@ public abstract class AzureResourceCollectorBase<T>(
 
     public virtual string Name => typeof(T).Name;
 
+    public virtual Task BuildRelationshipsAsync(AzureImportContext context, CancellationToken cancellationToken = default)
+        => Task.CompletedTask;
+
     public virtual async Task<IReadOnlyList<AzureGraphNode>> CollectAsync(AzureImportContext context, CancellationToken cancellationToken = default)
     {
         var resources = new List<T>();

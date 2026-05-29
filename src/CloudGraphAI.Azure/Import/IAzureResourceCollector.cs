@@ -10,6 +10,5 @@ public interface IAzureResourceCollector
 
     Task<IReadOnlyList<AzureGraphNode>> CollectAsync(AzureImportContext context, CancellationToken cancellationToken = default);
 
-    Task BuildRelationshipsAsync(AzureImportContext context, CancellationToken cancellationToken = default)
-        => Task.CompletedTask;
+    Task BuildRelationshipsAsync(AzureImportContext context, CancellationToken cancellationToken = default);
 }

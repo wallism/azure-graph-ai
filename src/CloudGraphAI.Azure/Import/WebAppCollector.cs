@@ -33,7 +33,7 @@ public sealed class WebAppCollector(
             await LoadWebJobsAsync(webApp, context, subscriptionId, cancellationToken).ConfigureAwait(false);
     }
 
-    public Task BuildRelationshipsAsync(AzureImportContext context, CancellationToken cancellationToken = default)
+    public override Task BuildRelationshipsAsync(AzureImportContext context, CancellationToken cancellationToken = default)
     {
         foreach (var app in context.GetNodes<WebApp>())
         {

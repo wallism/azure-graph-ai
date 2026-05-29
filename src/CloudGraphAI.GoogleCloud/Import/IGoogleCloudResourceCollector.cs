@@ -10,6 +10,5 @@ public interface IGoogleCloudResourceCollector
 
     Task<IReadOnlyList<GoogleCloudGraphNode>> CollectAsync(GoogleCloudImportContext context, CancellationToken cancellationToken = default);
 
-    Task BuildRelationshipsAsync(GoogleCloudImportContext context, CancellationToken cancellationToken = default)
-        => Task.CompletedTask;
+    Task BuildRelationshipsAsync(GoogleCloudImportContext context, CancellationToken cancellationToken = default);
 }

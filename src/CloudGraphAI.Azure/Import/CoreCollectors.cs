@@ -35,6 +35,9 @@ public sealed class SubscriptionCollector(
         context.AddNodes(subscriptions);
         return subscriptions;
     }
+
+    public Task BuildRelationshipsAsync(AzureImportContext context, CancellationToken cancellationToken = default)
+        => Task.CompletedTask;
 }
 
 public sealed class ResourceGroupCollector(
@@ -80,7 +83,7 @@ public sealed class UserAssignedManagedIdentityCollector(
     protected override Task<CallResult<AzureResourceListResult<UserAssignedManagedIdentity>>> LoadFirstPageAsync(string subscriptionId, CancellationToken cancellationToken)
         => AzureApi.GetUserAssignedManagedIdentitiesAsync(subscriptionId, cancellationToken);
 
-    public Task BuildRelationshipsAsync(AzureImportContext context, CancellationToken cancellationToken = default)
+    public override Task BuildRelationshipsAsync(AzureImportContext context, CancellationToken cancellationToken = default)
     {
         foreach (var resource in context.GetAllNodes().OfType<AzureResourceNode>())
         {
@@ -167,7 +170,7 @@ public sealed class SqlManagedInstanceCollector(
     protected override Task<CallResult<AzureResourceListResult<SqlManagedInstance>>> LoadFirstPageAsync(string subscriptionId, CancellationToken cancellationToken)
         => AzureApi.GetSqlManagedInstancesAsync(subscriptionId, cancellationToken);
 
-    public Task BuildRelationshipsAsync(AzureImportContext context, CancellationToken cancellationToken = default)
+    public override Task BuildRelationshipsAsync(AzureImportContext context, CancellationToken cancellationToken = default)
     {
         foreach (var sqlMi in context.GetNodes<SqlManagedInstance>())
         {

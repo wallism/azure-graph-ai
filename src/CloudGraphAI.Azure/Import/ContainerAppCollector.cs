@@ -20,7 +20,7 @@ public sealed class ContainerAppCollector(
     protected override Task<CallResult<AzureResourceListResult<ContainerApp>>> LoadFirstPageAsync(string subscriptionId, CancellationToken cancellationToken)
         => AzureApi.GetContainerAppsAsync(subscriptionId, cancellationToken);
 
-    public Task BuildRelationshipsAsync(AzureImportContext context, CancellationToken cancellationToken = default)
+    public override Task BuildRelationshipsAsync(AzureImportContext context, CancellationToken cancellationToken = default)
     {
         foreach (var app in context.GetNodes<ContainerApp>())
         {

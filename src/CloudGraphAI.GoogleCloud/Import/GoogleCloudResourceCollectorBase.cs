@@ -21,6 +21,9 @@ public abstract class GoogleCloudResourceCollectorBase<T>(
 
     public virtual string Name => typeof(T).Name;
 
+    public virtual Task BuildRelationshipsAsync(GoogleCloudImportContext context, CancellationToken cancellationToken = default)
+        => Task.CompletedTask;
+
     protected abstract IReadOnlyList<string> AssetTypes { get; }
 
     protected abstract T MapAsset(GoogleCloudAsset asset);

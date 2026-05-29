@@ -76,7 +76,7 @@ public sealed class GoogleSubnetworkCollector(
     protected override GoogleSubnetwork MapAsset(GoogleCloudAsset asset)
         => GoogleCloudAssetMapper.ToSubnetwork(asset);
 
-    public Task BuildRelationshipsAsync(GoogleCloudImportContext context, CancellationToken cancellationToken = default)
+    public override Task BuildRelationshipsAsync(GoogleCloudImportContext context, CancellationToken cancellationToken = default)
     {
         foreach (var subnetwork in context.GetNodes<GoogleSubnetwork>())
             AddNetworkIfFound(subnetwork.Networks, context, subnetwork.NetworkCandidate);
@@ -154,7 +154,7 @@ public sealed class GoogleCloudSqlInstanceCollector(
     protected override GoogleCloudSqlInstance MapAsset(GoogleCloudAsset asset)
         => GoogleCloudAssetMapper.ToCloudSqlInstance(asset);
 
-    public Task BuildRelationshipsAsync(GoogleCloudImportContext context, CancellationToken cancellationToken = default)
+    public override Task BuildRelationshipsAsync(GoogleCloudImportContext context, CancellationToken cancellationToken = default)
     {
         foreach (var instance in context.GetNodes<GoogleCloudSqlInstance>())
             AddNetworkIfFound(instance.PrivateNetworks, context, instance.PrivateNetworkCandidate);
@@ -190,7 +190,7 @@ public sealed class GoogleMemorystoreRedisCollector(
     protected override GoogleMemorystoreRedisInstance MapAsset(GoogleCloudAsset asset)
         => GoogleCloudAssetMapper.ToRedisInstance(asset);
 
-    public Task BuildRelationshipsAsync(GoogleCloudImportContext context, CancellationToken cancellationToken = default)
+    public override Task BuildRelationshipsAsync(GoogleCloudImportContext context, CancellationToken cancellationToken = default)
     {
         foreach (var instance in context.GetNodes<GoogleMemorystoreRedisInstance>())
             AddNetworkIfFound(instance.Networks, context, instance.AuthorizedNetworkCandidate);
@@ -214,7 +214,7 @@ public sealed class GoogleCloudRunServiceCollector(
     protected override GoogleCloudRunService MapAsset(GoogleCloudAsset asset)
         => GoogleCloudAssetMapper.ToCloudRunService(asset, _options.VertexAiEndpointSettingNames);
 
-    public Task BuildRelationshipsAsync(GoogleCloudImportContext context, CancellationToken cancellationToken = default)
+    public override Task BuildRelationshipsAsync(GoogleCloudImportContext context, CancellationToken cancellationToken = default)
     {
         foreach (var service in context.GetNodes<GoogleCloudRunService>())
         {
