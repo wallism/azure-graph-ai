@@ -61,7 +61,17 @@ if (providers.Azure)
         Console.WriteLine($"Logged in as: {account.User}");
         Console.WriteLine($"Active subscription: {account.SubscriptionName ?? "unknown"} ({account.SubscriptionId ?? "unknown"})");
         Console.WriteLine($"Target subscriptions: {string.Join(", ", azureOptions.IncludedSubscriptions)}");
+        Console.WriteLine($"Neo4j database: {config["Neo4jSettings:Database"]} ({config["Neo4jSettings:ConnectionUri"]})");
         Console.ResetColor();
+
+        if (account.SubscriptionId is not null &&
+            !azureOptions.IncludedSubscriptions.Contains(account.SubscriptionId, StringComparer.OrdinalIgnoreCase))
+        {
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine($"WARNING: Active subscription ({account.SubscriptionId}) is not in the target subscriptions list.");
+            Console.ResetColor();
+        }
+
         Console.Write("Continue with this Azure identity? [Y/n] ");
         var response = Console.ReadLine()?.Trim();
         if (!string.IsNullOrEmpty(response) && !response.Equals("y", StringComparison.OrdinalIgnoreCase))
