@@ -30,6 +30,25 @@ public static class AzureResourceId
         return slashIndex < 0 ? trimmed : trimmed[(slashIndex + 1)..];
     }
 
+    /// <summary>
+    /// Extracts the resource type from an Azure resource ID (e.g. "Microsoft.Web/sites").
+    /// </summary>
+    public static string? GetResourceType(string? resourceId)
+    {
+        if (string.IsNullOrWhiteSpace(resourceId))
+            return null;
+
+        var providerIndex = resourceId.IndexOf("/providers/", StringComparison.OrdinalIgnoreCase);
+        if (providerIndex < 0)
+            return null;
+
+        var afterProvider = resourceId[(providerIndex + "/providers/".Length)..];
+        var segments = afterProvider.Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+        // Resource type is provider/type (e.g. Microsoft.Web/sites)
+        return segments.Length >= 2 ? $"{segments[0]}/{segments[1]}" : null;
+    }
+
     public static string? GetSegmentAfter(string? resourceId, string segmentName)
     {
         if (string.IsNullOrWhiteSpace(resourceId))

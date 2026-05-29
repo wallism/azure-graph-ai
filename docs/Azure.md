@@ -163,3 +163,41 @@ Web Apps can also be related to Key Vaults with `CONNECTS_TO_KEYVAULT`. The impo
 ## Environments
 
 Environment is intentionally an optional enrichment, not a core Azure resource concept. Configure project-specific rules under `AzureGraph:EnvironmentRules`; matching resources get an `environment` graph property. If no rule matches, no environment value is written.
+
+## Cost Import
+
+The importer collects per-resource cost data for the previous billing month from the Azure Cost Management API. Each resource with non-zero cost gets a `MonthResourceCost` node linked via a `COST_FOR` relationship. History builds up over time — each monthly import adds new cost nodes without overwriting previous months.
+
+Cost nodes store:
+- `cost` — total pre-tax cost (decimal, 2 d.p.)
+- `currency` — e.g. "AUD", "USD"
+- `billingMonth` — "YYYY-MM" format
+- `resourceId`, `resourceName`, `resourceType`, `resourceGroupName`, `subscriptionId`
+
+To exclude cost import, remove `MonthResourceCost` from `IncludeResources` (or specify an explicit list without it).
+
+### Required Azure Roles
+
+The Cost Management API requires the authenticated identity to have one of the following roles **at the subscription scope**:
+
+| Role | Description |
+|------|-------------|
+| **Cost Management Reader** | Read-only access to cost data. Minimum required role. |
+| **Cost Management Contributor** | Read + manage cost configurations. |
+| **Reader** + **Cost Management Reader** | If using a limited reader identity, the explicit cost role is still needed. |
+| **Contributor** / **Owner** | These include cost access implicitly. |
+
+> **Note:** The generic `Reader` role alone is **not sufficient** to query the Cost Management API.
+
+To assign the role for a service principal or managed identity:
+
+```bash
+az role assignment create \
+  --assignee <client-id-or-object-id> \
+  --role "Cost Management Reader" \
+  --scope /subscriptions/<subscription-id>
+```
+
+For Azure CLI (`AzureCli` auth mode), the logged-in user must have this role on the target subscriptions.
+
+If the required role is missing, the importer logs a warning and skips cost collection — all other resource imports continue normally.

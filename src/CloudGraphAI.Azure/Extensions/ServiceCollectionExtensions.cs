@@ -50,6 +50,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAzureResourceCollector, SqlManagedInstanceCollector>();
         services.AddSingleton<IAzureResourceCollector, ContainerAppCollector>();
         services.AddSingleton<IAzureResourceCollector, WebAppCollector>();
+        services.AddSingleton<IAzureResourceCollector, ResourceCostCollector>();
 
         services.AddSingleton<IAzureGraphImportService, AzureGraphImportService>();
         services.AddSingleton<IAzureGraphDryRunService, AzureGraphDryRunService>();

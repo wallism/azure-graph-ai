@@ -1,6 +1,7 @@
 {
     "chat.tools.terminal.autoApprove": {
         "Set-Content": true,
-        "Get-Item": true
+        "Get-Item": true,
+        "ForEach-Object": true
     }
 }

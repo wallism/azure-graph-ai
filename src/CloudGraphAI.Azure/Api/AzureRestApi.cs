@@ -29,6 +29,7 @@ public interface IAzureRestApi
     Task<CallResult<AzureResourceListResult<WebJob>>> GetWebAppContinuousWebJobsAsync(string subscriptionId, WebApp webApp, CancellationToken cancellationToken = default);
     Task<CallResult<AppSettings>> GetWebAppSettingsAsync(string subscriptionId, WebApp webApp, CancellationToken cancellationToken = default);
     Task<CallResult<ConnectionStrings>> GetWebAppConnectionStringsAsync(string subscriptionId, WebApp webApp, CancellationToken cancellationToken = default);
+    Task<CallResult<CostQueryResponse>> PostCostManagementQueryAsync(string subscriptionId, CostQueryRequest request, CancellationToken cancellationToken = default);
 }
 
 public sealed class AzureRestApi : ApiBase, IAzureRestApi
@@ -53,6 +54,7 @@ public sealed class AzureRestApi : ApiBase, IAzureRestApi
     private readonly ApiMethod<AzureResourceListResult<WebJob>> _getWebJobs;
     private readonly ApiMethod<AppSettings> _postAppSettings;
     private readonly ApiMethod<ConnectionStrings> _postConnectionStrings;
+    private readonly ApiMethod<CostQueryResponse> _postCostManagementQuery;
 
     public AzureRestApi(
         IConfiguration configuration,
@@ -81,6 +83,7 @@ public sealed class AzureRestApi : ApiBase, IAzureRestApi
         _getWebJobs = PrivateGet<AzureResourceListResult<WebJob>>(MethodPriority.Normal);
         _postAppSettings = PrivatePost<AppSettings>(MethodPriority.Normal);
         _postConnectionStrings = PrivatePost<ConnectionStrings>(MethodPriority.Normal);
+        _postCostManagementQuery = PrivatePost<CostQueryResponse>(MethodPriority.Normal);
     }
 
     protected override string BaseUrl => "https://management.azure.com/subscriptions";
@@ -144,6 +147,9 @@ public sealed class AzureRestApi : ApiBase, IAzureRestApi
 
     public Task<CallResult<ConnectionStrings>> GetWebAppConnectionStringsAsync(string subscriptionId, WebApp webApp, CancellationToken cancellationToken = default)
         => _postConnectionStrings.Call($"{subscriptionId}/resourceGroups/{webApp.ResourceGroupName}/providers/Microsoft.Web/sites/{webApp.Name}/config/connectionstrings/list", "", "api-version=2022-03-01", cancellationToken);
+
+    public Task<CallResult<CostQueryResponse>> PostCostManagementQueryAsync(string subscriptionId, CostQueryRequest request, CancellationToken cancellationToken = default)
+        => _postCostManagementQuery.Call($"{subscriptionId}/providers/Microsoft.CostManagement/query", request, "api-version=2023-03-01", cancellationToken);
 
     protected override async Task SetPrivateRequestProperties(HttpRequestMessage request, string method, object? rawPayload = null, string propsWithNonce = "")
     {

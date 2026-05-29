@@ -90,6 +90,8 @@ public sealed class AzureGraphImportService(
             await InvokeRepoListMethodAsync(UpsertRelationshipsMethod, group.Type, group.Nodes).ConfigureAwait(false);
         }
 
+        await CreateCostRelationshipsAsync(context, cancellationToken).ConfigureAwait(false);
+
         var counts = context.GetNodeGroups()
             .OrderBy(group => group.Type.Name)
             .ToDictionary(group => group.Type.Name, group => group.Nodes.Count);
@@ -99,6 +101,27 @@ public sealed class AzureGraphImportService(
 
     private List<string> LoadSubscriptionIds()
         => AzureGraphSubscriptionConfiguration.LoadSubscriptionIds(configuration);
+
+    private async Task CreateCostRelationshipsAsync(AzureImportContext context, CancellationToken cancellationToken)
+    {
+        var costNodes = context.GetNodes<Models.MonthResourceCost>();
+        if (costNodes.Count == 0)
+            return;
+
+        cancellationToken.ThrowIfCancellationRequested();
+        logger.LogInformation("Creating COST_FOR relationships for {Count} cost nodes", costNodes.Count);
+
+        const string cypher = """
+            MATCH (c:MonthResourceCost)
+            WHERE c.resourceId IS NOT NULL
+            WITH c
+            MATCH (r {id: c.resourceId})
+            WHERE NOT r:MonthResourceCost
+            MERGE (c)-[:COST_FOR]->(r)
+            """;
+
+        await graphRepo.ExecuteWriteAsync(cypher, null).ConfigureAwait(false);
+    }
 
     private static bool ShouldIncludeCollector(IAzureResourceCollector collector, List<string> includeResources)
     {
