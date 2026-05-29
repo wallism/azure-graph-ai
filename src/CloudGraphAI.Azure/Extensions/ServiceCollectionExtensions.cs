@@ -67,6 +67,7 @@ public static class ServiceCollectionExtensions
             return GraphDatabase.Driver(connection, AuthTokens.Basic(settings.User, settings.Password));
         });
 
+        services.AddSingleton<INeo4jDatabaseInitializer, Neo4jDatabaseInitializer>();
         services.AddSingleton<IDataSourceService, DataSourceService>();
         services.AddSingleton<INeo4jGenericRepo, Neo4jGenericRepo>();
         return services;

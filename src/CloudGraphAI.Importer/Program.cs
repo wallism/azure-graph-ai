@@ -6,6 +6,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Neo4j.Driver;
+using Neo4jLiteRepo.Setup;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -58,18 +60,54 @@ if (args.Any(arg => arg.Equals("--dry-run", StringComparison.OrdinalIgnoreCase))
     return;
 }
 
-if (providers.Azure)
+try
 {
-    var importer = host.Services.GetRequiredService<IAzureGraphImportService>();
-    var summary = await importer.ImportAsync();
-    PrintImportSummary("Azure", summary.NodeCounts, summary.DanglingRelationships.Count);
-}
+    // Ensure the configured Neo4j database exists before importing
+    var dbInitializer = host.Services.GetRequiredService<INeo4jDatabaseInitializer>();
+    var dbReady = await dbInitializer.EnsureDatabaseExistsAsync();
+    if (!dbReady)
+    {
+        Environment.ExitCode = 1;
+        return;
+    }
 
-if (providers.GoogleCloud)
+    if (providers.Azure)
+    {
+        var importer = host.Services.GetRequiredService<IAzureGraphImportService>();
+        var summary = await importer.ImportAsync();
+        PrintImportSummary("Azure", summary.NodeCounts, summary.DanglingRelationships.Count);
+    }
+
+    if (providers.GoogleCloud)
+    {
+        var importer = host.Services.GetRequiredService<IGoogleCloudGraphImportService>();
+        var summary = await importer.ImportAsync();
+        PrintImportSummary("Google Cloud", summary.NodeCounts, summary.DanglingRelationships.Count);
+    }
+}
+catch (ServiceUnavailableException ex)
 {
-    var importer = host.Services.GetRequiredService<IGoogleCloudGraphImportService>();
-    var summary = await importer.ImportAsync();
-    PrintImportSummary("Google Cloud", summary.NodeCounts, summary.DanglingRelationships.Count);
+    var logger = host.Services.GetRequiredService<ILoggerFactory>().CreateLogger("CloudGraphAI.Importer");
+    logger.LogDebug(ex, "Neo4j connectivity failure details");
+
+    var config = host.Services.GetRequiredService<IConfiguration>();
+    var connectionUri = config["Neo4jSettings:ConnectionUri"] ?? "(not configured)";
+
+    Console.ForegroundColor = ConsoleColor.Red;
+    Console.WriteLine();
+    Console.WriteLine("  Neo4j is unavailable.");
+    Console.WriteLine();
+    Console.WriteLine($"  Could not connect to: {connectionUri}");
+    Console.WriteLine();
+    Console.WriteLine("  Please check that:");
+    Console.WriteLine("    - Neo4j is running and accepting connections");
+    Console.WriteLine("    - The host and port in Neo4jSettings:ConnectionUri are correct");
+    Console.WriteLine("    - No firewall is blocking the connection");
+    Console.WriteLine("    - Encryption settings are compatible (Neo4j 4.0+ changed defaults)");
+    Console.WriteLine();
+    Console.ResetColor();
+
+    Environment.ExitCode = 1;
 }
 
 static void PrintAzureDryRun(AzureGraphDryRunSummary dryRun)

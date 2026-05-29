@@ -32,6 +32,29 @@ Configure `Neo4jSettings` in `src/CloudGraphAI.Importer/appsettings.Development.
 - `Neo4jSettings:Password`
 - `Neo4jSettings:Database`
 
+### Automatic Database Creation
+
+On startup the importer checks whether the configured database exists and is online. Behaviour depends on the Neo4j edition:
+
+| Edition | Behaviour |
+|---------|-----------|
+| **Enterprise / Aura Enterprise** | Automatically creates the database with `CREATE DATABASE ... IF NOT EXISTS` and waits (up to 30 s) for it to come online. |
+| **Aura Free / Professional** | Reports as enterprise but may lack `CREATE DATABASE` privileges. If creation fails the importer logs the error with manual steps and exits. Use the pre-provisioned database name (usually `neo4j`) or create the database via the Aura Console. |
+| **Community Edition** | Only the default `neo4j` database is supported. The importer logs a message explaining the limitation and exits. Set `Neo4jSettings:Database` to `neo4j` (or leave it empty) to use the default database. |
+
+If you need to create the database manually, connect to the system database and run:
+
+```cypher
+:use system
+CREATE DATABASE `cloud-graph-ai` IF NOT EXISTS;
+```
+
+You can verify the database is online with:
+
+```cypher
+SHOW DATABASE `cloud-graph-ai` YIELD name, currentStatus;
+```
+
 The import services enforce unique constraints, upsert all nodes, then upsert all relationships. Dangling relationship IDs are pruned before graph writes so edges are only written when both endpoint nodes were loaded in the current import context.
 
 ## AI Console
