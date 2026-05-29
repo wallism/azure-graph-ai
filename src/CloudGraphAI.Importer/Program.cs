@@ -1,11 +1,14 @@
+using CloudGraphAI.Azure.Configuration;
 using CloudGraphAI.Azure.Import;
 using CloudGraphAI.Azure.Extensions;
+using CloudGraphAI.Azure.Infrastructure;
 using CloudGraphAI.GoogleCloud.Extensions;
 using CloudGraphAI.GoogleCloud.Import;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Neo4j.Driver;
 using Neo4jLiteRepo.Setup;
 
@@ -35,6 +38,39 @@ if (providers.GoogleCloud)
     builder.Services.AddGoogleCloudGraphImporter(builder.Configuration);
 
 using var host = builder.Build();
+
+// Verify Azure CLI identity before proceeding
+if (providers.Azure)
+{
+    var azureOptions = host.Services.GetRequiredService<IOptions<AzureGraphOptions>>().Value;
+    if (azureOptions.Authentication.Mode.Equals(AzureGraphAuthenticationModes.AzureCli, StringComparison.OrdinalIgnoreCase))
+    {
+        var config = host.Services.GetRequiredService<IConfiguration>();
+        var tenantId = config["Azure:TenantId"];
+        var azUser = await AzureCliIdentity.GetCurrentUserAsync(tenantId);
+        if (azUser is null)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("Failed to retrieve Azure CLI user. Ensure you are logged in with 'az login'.");
+            Console.ResetColor();
+            Environment.ExitCode = 1;
+            return;
+        }
+
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.WriteLine($"Logged in as: {azUser}");
+        Console.ResetColor();
+        Console.Write("Continue with this Azure identity? [Y/n] ");
+        var response = Console.ReadLine()?.Trim();
+        if (!string.IsNullOrEmpty(response) && !response.Equals("y", StringComparison.OrdinalIgnoreCase))
+        {
+            Console.WriteLine("Aborted by user.");
+            Environment.ExitCode = 0;
+            return;
+        }
+    }
+}
+
 if (args.Any(arg => arg.Equals("--dry-run", StringComparison.OrdinalIgnoreCase)))
 {
     var succeeded = true;
