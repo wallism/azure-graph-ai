@@ -1,7 +1,6 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.31903.59
+# Visual Studio Version 18
+VisualStudioVersion = 18.1.11312.151 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Agile.API.Clients", "Agile.API.Clients\Agile.API.Clients.csproj", "{526A795D-070B-4B44-9F36-9083BECDFC17}"
 EndProject
@@ -16,6 +15,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CloudGraphAI.Console", "CloudGraphAI.Console\CloudGraphAI.Console.csproj", "{3989D5B4-7CD6-420F-922F-B54216AB4F24}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CloudGraphAI.GoogleCloud", "CloudGraphAI.GoogleCloud\CloudGraphAI.GoogleCloud.csproj", "{F775B1B4-6BB0-4F01-AAD8-674C33C30D2D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CloudGraphAI.Tests", "CloudGraphAI.Tests\CloudGraphAI.Tests.csproj", "{D74B710C-012A-45CE-8E27-A21CCAAD2DEB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -111,8 +112,23 @@ Global
 		{F775B1B4-6BB0-4F01-AAD8-674C33C30D2D}.Release|x64.Build.0 = Release|Any CPU
 		{F775B1B4-6BB0-4F01-AAD8-674C33C30D2D}.Release|x86.ActiveCfg = Release|Any CPU
 		{F775B1B4-6BB0-4F01-AAD8-674C33C30D2D}.Release|x86.Build.0 = Release|Any CPU
+		{D74B710C-012A-45CE-8E27-A21CCAAD2DEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D74B710C-012A-45CE-8E27-A21CCAAD2DEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D74B710C-012A-45CE-8E27-A21CCAAD2DEB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D74B710C-012A-45CE-8E27-A21CCAAD2DEB}.Debug|x64.Build.0 = Debug|Any CPU
+		{D74B710C-012A-45CE-8E27-A21CCAAD2DEB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D74B710C-012A-45CE-8E27-A21CCAAD2DEB}.Debug|x86.Build.0 = Debug|Any CPU
+		{D74B710C-012A-45CE-8E27-A21CCAAD2DEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D74B710C-012A-45CE-8E27-A21CCAAD2DEB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D74B710C-012A-45CE-8E27-A21CCAAD2DEB}.Release|x64.ActiveCfg = Release|Any CPU
+		{D74B710C-012A-45CE-8E27-A21CCAAD2DEB}.Release|x64.Build.0 = Release|Any CPU
+		{D74B710C-012A-45CE-8E27-A21CCAAD2DEB}.Release|x86.ActiveCfg = Release|Any CPU
+		{D74B710C-012A-45CE-8E27-A21CCAAD2DEB}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6D8E1A46-DD49-4EC0-981E-338FB8426077}
 	EndGlobalSection
 EndGlobal

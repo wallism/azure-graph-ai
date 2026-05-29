@@ -31,8 +31,16 @@ public abstract class AzureGraphNode : GraphNode
         ? JsonConvert.SerializeObject(Tags.OrderBy(kvp => kvp.Key))
         : null;
 
+    /// <summary>
+    /// Set by <see cref="Import.IDisplayNameFormatter"/> during import to store a cleaned display name.
+    /// When null, <see cref="BuildDisplayName"/> falls back to the raw Name.
+    /// </summary>
+    [JsonIgnore]
+    public string? FormattedDisplayName { get; set; }
+
     public override string BuildDisplayName()
-        => string.IsNullOrWhiteSpace(Name) ? AzureResourceId.GetLastSegment(Id) : Name;
+        => FormattedDisplayName
+           ?? (string.IsNullOrWhiteSpace(Name) ? AzureResourceId.GetLastSegment(Id) : Name);
 
     public override string GetMainContent()
     {

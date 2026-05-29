@@ -18,6 +18,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddSingleton(configuration);
         services.Configure<AzureGraphOptions>(configuration.GetSection("AzureGraph"));
+        services.Configure<DisplayNameOptions>(configuration.GetSection("AzureGraph:DisplayName"));
 
         services.AddHttpClient(ApiBase.DefaultHttpClientName, client =>
             {
@@ -33,6 +34,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IMicrosoftTokenProvider, MicrosoftTokenProvider>();
         services.AddSingleton<IAzureRestApi, AzureRestApi>();
         services.AddSingleton<IResourceEnvironmentResolver, ConfigurationResourceEnvironmentResolver>();
+        services.AddSingleton<IDisplayNameFormatter, DisplayNameFormatter>();
 
         services.AddSingleton<IAzureResourceCollector, SubscriptionCollector>();
         services.AddSingleton<IAzureResourceCollector, ResourceGroupCollector>();

@@ -29,6 +29,7 @@ public sealed record DanglingRelationship(
 public sealed class AzureGraphImportService(
     IConfiguration configuration,
     IResourceEnvironmentResolver environmentResolver,
+    IDisplayNameFormatter displayNameFormatter,
     IEnumerable<IAzureResourceCollector> collectors,
     INeo4jGenericRepo graphRepo,
     ILogger<AzureGraphImportService> logger)
@@ -67,6 +68,8 @@ public sealed class AzureGraphImportService(
         foreach (var collector in orderedCollectors)
             await collector.BuildRelationshipsAsync(context, cancellationToken).ConfigureAwait(false);
 
+        ApplyDisplayNameFormatting(context);
+
         var danglingRelationships = ValidateAndPruneDanglingRelationships(context);
 
         await graphRepo.EnforceUniqueConstraintsForAllGraphNodes([typeof(AzureGraphNode).Assembly]).ConfigureAwait(false);
@@ -92,6 +95,18 @@ public sealed class AzureGraphImportService(
 
     private List<string> LoadSubscriptionIds()
         => AzureGraphSubscriptionConfiguration.LoadSubscriptionIds(configuration);
+
+    private void ApplyDisplayNameFormatting(AzureImportContext context)
+    {
+        foreach (var node in context.GetAllNodes())
+        {
+            var rawName = string.IsNullOrWhiteSpace(node.Name)
+                ? AzureResourceId.GetLastSegment(node.Id)
+                : node.Name;
+
+            node.FormattedDisplayName = displayNameFormatter.Format(rawName, node);
+        }
+    }
 
     private Task InvokeRepoListMethodAsync(MethodInfo genericMethod, Type nodeType, IReadOnlyList<AzureGraphNode> nodes)
     {
