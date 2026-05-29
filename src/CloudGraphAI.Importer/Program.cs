@@ -92,13 +92,17 @@ if (providers.Azure)
             Console.ResetColor();
         }
 
-        Console.Write("Continue with this Azure identity? [Y/n] ");
-        var response = Console.ReadLine()?.Trim();
-        if (!string.IsNullOrEmpty(response) && !response.Equals("y", StringComparison.OrdinalIgnoreCase))
+        var autoConfirm = args.Any(a => a.Equals("--yes", StringComparison.OrdinalIgnoreCase) || a.Equals("-y", StringComparison.OrdinalIgnoreCase));
+        if (!autoConfirm)
         {
-            Console.WriteLine("Aborted by user.");
-            Environment.ExitCode = 0;
-            return;
+            Console.Write("Continue with this Azure identity? [Y/n] ");
+            var response = Console.ReadLine()?.Trim();
+            if (!string.IsNullOrEmpty(response) && !response.Equals("y", StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine("Aborted by user.");
+                Environment.ExitCode = 0;
+                return;
+            }
         }
     }
 }
