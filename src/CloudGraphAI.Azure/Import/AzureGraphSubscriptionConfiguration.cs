@@ -8,9 +8,7 @@ internal static class AzureGraphSubscriptionConfiguration
     public static List<string> LoadSubscriptionIds(IConfiguration configuration)
     {
         var options = configuration.GetSection("AzureGraph").Get<AzureGraphOptions>() ?? new AzureGraphOptions();
-        var configured = options.IncludedSubscriptions.Count > 0
-            ? options.IncludedSubscriptions
-            : configuration.GetSection("Azure:IncludedSubscriptions").Get<List<string>>() ?? [];
+        var configured = options.IncludedSubscriptions;
 
         return configured
             .Where(value => !string.IsNullOrWhiteSpace(value))

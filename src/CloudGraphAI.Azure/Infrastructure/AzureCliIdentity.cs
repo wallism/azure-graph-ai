@@ -5,8 +5,17 @@ using Azure.Identity;
 
 namespace CloudGraphAI.Azure.Infrastructure;
 
+public sealed record AzureCliAccount(string? User, string? SubscriptionId, string? SubscriptionName);
+
 public static class AzureCliIdentity
 {
+    public static async Task<AzureCliAccount> GetCurrentAccountAsync(string? tenantId = null)
+    {
+        var user = await GetCurrentUserAsync(tenantId);
+        var (subscriptionId, subscriptionName) = GetDefaultSubscription();
+        return new AzureCliAccount(user, subscriptionId, subscriptionName);
+    }
+
     public static async Task<string?> GetCurrentUserAsync(string? tenantId = null)
     {
         try
@@ -56,5 +65,40 @@ public static class AzureCliIdentity
             return email.GetString();
 
         return null;
+    }
+
+    private static (string? Id, string? Name) GetDefaultSubscription()
+    {
+        try
+        {
+            var profilePath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                ".azure", "azureProfile.json");
+
+            if (!File.Exists(profilePath))
+                return (null, null);
+
+            var json = File.ReadAllText(profilePath);
+            using var doc = JsonDocument.Parse(json);
+
+            if (!doc.RootElement.TryGetProperty("subscriptions", out var subscriptions))
+                return (null, null);
+
+            foreach (var sub in subscriptions.EnumerateArray())
+            {
+                if (sub.TryGetProperty("isDefault", out var isDefault) && isDefault.GetBoolean())
+                {
+                    var id = sub.TryGetProperty("id", out var idProp) ? idProp.GetString() : null;
+                    var name = sub.TryGetProperty("name", out var nameProp) ? nameProp.GetString() : null;
+                    return (id, name);
+                }
+            }
+
+            return (null, null);
+        }
+        catch
+        {
+            return (null, null);
+        }
     }
 }

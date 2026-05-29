@@ -2,6 +2,8 @@ namespace CloudGraphAI.Azure.Configuration;
 
 public sealed class AzureGraphOptions
 {
+    public string? TenantId { get; set; }
+
     public List<string> IncludedSubscriptions { get; set; } = [];
 
     public AzureGraphAuthenticationOptions Authentication { get; set; } = new();

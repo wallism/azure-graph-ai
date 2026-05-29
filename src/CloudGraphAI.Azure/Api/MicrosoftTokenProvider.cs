@@ -57,7 +57,7 @@ public sealed class MicrosoftTokenProvider(
 
     private async Task<TokenResponse> LoadAzureCliTokenAsync(CancellationToken cancellationToken)
     {
-        var tenantId = configuration["Azure:TenantId"];
+        var tenantId = configuration["AzureGraph:TenantId"] ?? configuration["Azure:TenantId"];
         var options = new AzureCliCredentialOptions();
         if (!string.IsNullOrWhiteSpace(tenantId))
             options.TenantId = tenantId;
@@ -78,9 +78,9 @@ public sealed class MicrosoftTokenProvider(
 
     private async Task<TokenResponse> LoadClientSecretTokenAsync(CancellationToken cancellationToken)
     {
-        var tenantId = configuration["Azure:TenantId"];
+        var tenantId = configuration["AzureGraph:TenantId"] ?? configuration["Azure:TenantId"];
         if (string.IsNullOrWhiteSpace(tenantId))
-            throw new InvalidOperationException("Azure:TenantId is required when AzureGraph:Authentication:Mode is ClientSecret.");
+            throw new InvalidOperationException("AzureGraph:TenantId is required when AzureGraph:Authentication:Mode is ClientSecret.");
 
         var tokenResponse = await loginApi.GetManagementTokenAsync(tenantId, cancellationToken).ConfigureAwait(false);
         if (!tokenResponse.WasSuccessful || tokenResponse.Value is null)

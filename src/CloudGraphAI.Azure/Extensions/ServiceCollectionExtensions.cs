@@ -1,6 +1,7 @@
 using System.Net;
 using Agile.API.Clients;
 using CloudGraphAI.Azure.Api;
+using CloudGraphAI.Azure.Configuration;
 using CloudGraphAI.Azure.Environments;
 using CloudGraphAI.Azure.Import;
 using Microsoft.Extensions.Configuration;
@@ -16,6 +17,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddAzureGraphImporter(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddSingleton(configuration);
+        services.Configure<AzureGraphOptions>(configuration.GetSection("AzureGraph"));
 
         services.AddHttpClient(ApiBase.DefaultHttpClientName, client =>
             {

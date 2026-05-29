@@ -51,7 +51,7 @@ public sealed class AzureGraphImportService(
     {
         var subscriptionIds = LoadSubscriptionIds();
         if (subscriptionIds.Count == 0)
-            throw new InvalidOperationException("No subscriptions configured. Set AzureGraph:IncludedSubscriptions or Azure:IncludedSubscriptions.");
+            throw new InvalidOperationException("No subscriptions configured. Set AzureGraph:IncludedSubscriptions.");
 
         var context = new AzureImportContext(subscriptionIds, environmentResolver);
         var orderedCollectors = collectors.OrderBy(c => c.Order).ToList();

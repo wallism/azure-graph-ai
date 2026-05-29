@@ -46,9 +46,9 @@ if (providers.Azure)
     if (azureOptions.Authentication.Mode.Equals(AzureGraphAuthenticationModes.AzureCli, StringComparison.OrdinalIgnoreCase))
     {
         var config = host.Services.GetRequiredService<IConfiguration>();
-        var tenantId = config["Azure:TenantId"];
-        var azUser = await AzureCliIdentity.GetCurrentUserAsync(tenantId);
-        if (azUser is null)
+        var tenantId = config["AzureGraph:TenantId"];
+        var account = await AzureCliIdentity.GetCurrentAccountAsync(tenantId);
+        if (account.User is null)
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("Failed to retrieve Azure CLI user. Ensure you are logged in with 'az login'.");
@@ -58,7 +58,9 @@ if (providers.Azure)
         }
 
         Console.ForegroundColor = ConsoleColor.Cyan;
-        Console.WriteLine($"Logged in as: {azUser}");
+        Console.WriteLine($"Logged in as: {account.User}");
+        Console.WriteLine($"Active subscription: {account.SubscriptionName ?? "unknown"} ({account.SubscriptionId ?? "unknown"})");
+        Console.WriteLine($"Target subscriptions: {string.Join(", ", azureOptions.IncludedSubscriptions)}");
         Console.ResetColor();
         Console.Write("Continue with this Azure identity? [Y/n] ");
         var response = Console.ReadLine()?.Trim();

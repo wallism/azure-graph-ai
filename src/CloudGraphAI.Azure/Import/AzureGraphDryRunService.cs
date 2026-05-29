@@ -43,7 +43,7 @@ public sealed class AzureGraphDryRunService(
     {
         var subscriptionIds = AzureGraphSubscriptionConfiguration.LoadSubscriptionIds(configuration);
         if (subscriptionIds.Count == 0)
-            throw new InvalidOperationException("No subscriptions configured. Set AzureGraph:IncludedSubscriptions or Azure:IncludedSubscriptions.");
+            throw new InvalidOperationException("No subscriptions configured. Set AzureGraph:IncludedSubscriptions.");
 
         var neo4jSettings = new Neo4jSettings { User = "", Password = "", Database = "" };
         configuration.GetSection("Neo4jSettings").Bind(neo4jSettings);
