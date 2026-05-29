@@ -23,6 +23,26 @@ The dry run verifies Neo4j connectivity and then performs provider-specific read
 dotnet run --project src\CloudGraphAI.Importer\CloudGraphAI.Importer.csproj -- --dry-run
 ```
 
+## Resource Filtering
+
+Both providers support an `IncludeResources` configuration array to limit which resource types are imported. The default is `["All"]`.
+
+To override at runtime, pass `--include-resources` with a comma-separated list:
+
+```powershell
+dotnet run --project src\CloudGraphAI.Importer\CloudGraphAI.Importer.csproj -- --include-resources WebApp,VNet,KeyVault
+```
+
+This overrides the appsettings value for both Azure and Google Cloud providers simultaneously. Standard .NET command-line configuration syntax also works for provider-specific overrides:
+
+```powershell
+dotnet run -- --AzureGraph:IncludeResources:0=WebApp --AzureGraph:IncludeResources:1=VNet
+```
+
+Structural resources (Subscription/ResourceGroup for Azure, Organization/Folder/Project for Google Cloud) are always imported. Child resources that are part of a parent (e.g. Subnet with VNet, Subnetwork with Network) are automatically included when the parent is listed.
+
+See [Azure.md](Azure.md#resource-filtering) and [GoogleCloud.md](GoogleCloud.md#resource-filtering) for the full list of available resource names per provider.
+
 ## Neo4j Configuration
 
 Configure `Neo4jSettings` in `src/CloudGraphAI.Importer/appsettings.Development.json`, `src/CloudGraphAI.Console/appsettings.Development.json`, or environment variables:

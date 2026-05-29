@@ -6,6 +6,8 @@ public sealed class AzureGraphOptions
 
     public List<string> IncludedSubscriptions { get; set; } = [];
 
+    public List<string> IncludeResources { get; set; } = ["All"];
+
     public AzureGraphAuthenticationOptions Authentication { get; set; } = new();
 
     public bool IncludeWebAppDetails { get; set; } = true;

@@ -76,6 +76,56 @@ The importer does not create or enable anything in Google Cloud. Before import, 
 
 If the API is disabled, IAM is missing, or the `gcloud` token is expired, the dry run reports the failing scope and the Google API error.
 
+## Resource Filtering
+
+By default the importer collects all known Google Cloud resource types. To import only a subset, set `GoogleCloudGraph:IncludeResources` to an explicit list of resource names:
+
+```json
+{
+  "GoogleCloudGraph": {
+    "IncludeResources": [ "GoogleCloudRunService", "GoogleNetwork" ]
+  }
+}
+```
+
+The default value is `["All"]`, which imports everything.
+
+You can also pass this at runtime via the `--include-resources` argument (comma-separated), which overrides the appsettings value for both Azure and Google Cloud:
+
+```powershell
+dotnet run --project src\CloudGraphAI.Importer\CloudGraphAI.Importer.csproj -- --include-resources GoogleCloudRunService,GoogleNetwork
+```
+
+### Always-included resources
+
+The following resources are always imported regardless of the filter, because they provide the structural hierarchy that other resources depend on:
+
+- `GoogleOrganization`
+- `GoogleFolder`
+- `GoogleProject`
+
+### Child resources
+
+Some resources are part of a parent and are automatically included when the parent is listed:
+
+| Child | Included when parent is listed |
+|-------|-------------------------------|
+| `GoogleSubnetwork` | `GoogleNetwork` |
+
+### Available resource names
+
+Use these values in `IncludeResources` (case-insensitive):
+
+- `GoogleNetwork` (includes GoogleSubnetwork)
+- `GoogleServiceAccount`
+- `GoogleArtifactRepository`
+- `GoogleSecret`
+- `GoogleStorageBucket`
+- `GoogleCloudSqlInstance`
+- `GoogleVertexAiEndpoint`
+- `GoogleMemorystoreRedisInstance`
+- `GoogleCloudRunService`
+
 ## Current Collectors
 
 - organizations

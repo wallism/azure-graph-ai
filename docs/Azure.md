@@ -23,6 +23,60 @@ dotnet run --project src\CloudGraphAI.Importer\CloudGraphAI.Importer.csproj
 
 For local development the importer defaults to `AzureCli`, so it uses your current Azure CLI login. Service-principal client secret auth is still supported by setting `AzureGraph:Authentication:Mode` to `ClientSecret`.
 
+## Resource Filtering
+
+By default the importer collects all known Azure resource types. To import only a subset, set `AzureGraph:IncludeResources` to an explicit list of resource names:
+
+```json
+{
+  "AzureGraph": {
+    "IncludeResources": [ "WebApp", "VNet", "KeyVault" ]
+  }
+}
+```
+
+The default value is `["All"]`, which imports everything.
+
+You can also pass this at runtime via the `--include-resources` argument (comma-separated), which overrides the appsettings value for both Azure and Google Cloud:
+
+```powershell
+dotnet run --project src\CloudGraphAI.Importer\CloudGraphAI.Importer.csproj -- --include-resources WebApp,VNet,KeyVault
+```
+
+### Always-included resources
+
+The following resources are always imported regardless of the filter, because they provide the structural hierarchy that other resources depend on:
+
+- `Subscription`
+- `ResourceGroup`
+
+### Child resources
+
+Some resources are part of a parent and are automatically included when the parent is listed:
+
+| Child | Included when parent is listed |
+|-------|-------------------------------|
+| `Subnet` | `VNet` |
+| `VirtualNetworkPeering` | `VNet` |
+| `WebJob` | `WebApp` |
+
+### Available resource names
+
+Use these values in `IncludeResources` (case-insensitive):
+
+- `VNet` (includes Subnet, VirtualNetworkPeering)
+- `StorageAccount`
+- `KeyVault`
+- `UserAssignedManagedIdentity`
+- `ServerFarm`
+- `ContainerRegistry`
+- `CosmosDbAccount`
+- `AzureAIFoundryAccount`
+- `RedisCache`
+- `SqlManagedInstance`
+- `ContainerApp`
+- `WebApp` (includes WebJob)
+
 ## Current Collectors
 
 - subscriptions

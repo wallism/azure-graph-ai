@@ -4,6 +4,8 @@ public sealed class GoogleCloudGraphOptions
 {
     public List<string> IncludedScopes { get; set; } = [];
 
+    public List<string> IncludeResources { get; set; } = ["All"];
+
     public GoogleCloudAuthenticationOptions Authentication { get; set; } = new();
 
     public int PageSize { get; set; } = 500;

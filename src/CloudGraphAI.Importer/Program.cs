@@ -18,7 +18,27 @@ builder.Configuration
     .SetBasePath(AppContext.BaseDirectory)
     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
     .AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true)
-    .AddEnvironmentVariables();
+    .AddEnvironmentVariables()
+    .AddCommandLine(args);
+
+// Support --include-resources as a comma-separated override for both providers
+var includeResourcesArg = args
+    .SkipWhile(a => !a.Equals("--include-resources", StringComparison.OrdinalIgnoreCase))
+    .Skip(1)
+    .FirstOrDefault();
+
+if (!string.IsNullOrWhiteSpace(includeResourcesArg))
+{
+    var resources = includeResourcesArg.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    var overrides = new Dictionary<string, string?>();
+    for (var i = 0; i < resources.Length; i++)
+    {
+        overrides[$"AzureGraph:IncludeResources:{i}"] = resources[i];
+        overrides[$"GoogleCloudGraph:IncludeResources:{i}"] = resources[i];
+    }
+
+    builder.Configuration.AddInMemoryCollection(overrides);
+}
 
 builder.Logging.ClearProviders();
 builder.Logging.AddSimpleConsole(options =>

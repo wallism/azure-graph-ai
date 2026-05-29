@@ -53,7 +53,10 @@ public sealed class GoogleCloudGraphImportService(
 
         var options = configuration.GetSection("GoogleCloudGraph").Get<GoogleCloudGraphOptions>() ?? new();
         var context = new GoogleCloudImportContext(scopes, options);
-        var orderedCollectors = collectors.OrderBy(c => c.Order).ToList();
+        var orderedCollectors = collectors
+            .Where(c => ShouldIncludeCollector(c, options.IncludeResources))
+            .OrderBy(c => c.Order)
+            .ToList();
 
         foreach (var collector in orderedCollectors)
         {
@@ -101,6 +104,40 @@ public sealed class GoogleCloudGraphImportService(
         var task = genericMethod.MakeGenericMethod(nodeType).Invoke(graphRepo, [typedList]) as Task;
         return task ?? throw new InvalidOperationException($"Failed to invoke {genericMethod.Name} for {nodeType.Name}.");
     }
+
+    private static bool ShouldIncludeCollector(IGoogleCloudResourceCollector collector, List<string> includeResources)
+    {
+        if (includeResources.Contains("All", StringComparer.OrdinalIgnoreCase))
+            return true;
+
+        // Structural resources are always included
+        if (AlwaysIncludedResources.Contains(collector.Name, StringComparer.OrdinalIgnoreCase))
+            return true;
+
+        // Check if the collector's resource is explicitly listed
+        if (includeResources.Contains(collector.Name, StringComparer.OrdinalIgnoreCase))
+            return true;
+
+        // Include child resources when their parent is included
+        if (ParentChildResources.TryGetValue(collector.Name, out var parent))
+            return includeResources.Contains(parent, StringComparer.OrdinalIgnoreCase);
+
+        return false;
+    }
+
+    /// <summary>Resources that are always imported regardless of IncludeResources configuration.</summary>
+    private static readonly HashSet<string> AlwaysIncludedResources = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "GoogleOrganization",
+        "GoogleFolder",
+        "GoogleProject"
+    };
+
+    /// <summary>Child resources mapped to the parent that triggers their inclusion.</summary>
+    private static readonly Dictionary<string, string> ParentChildResources = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["GoogleSubnetwork"] = "GoogleNetwork"
+    };
 
     private IReadOnlyList<GoogleCloudDanglingRelationship> ValidateAndPruneDanglingRelationships(GoogleCloudImportContext context)
     {
