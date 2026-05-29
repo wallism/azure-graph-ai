@@ -1,0 +1,6 @@
+
+$env:NEO4J_URL = "neo4j://127.0.0.1:7687"
+$env:NEO4J_USERNAME = "neo4j"
+$env:NEO4J_DATABASE = "neo4j"
+$env:NEO4J_PASSWORD = ""
+$env:NEO4J_MCP_SERVER_PORT = "8000"
