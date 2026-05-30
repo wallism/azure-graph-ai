@@ -81,9 +81,79 @@ The import services enforce unique constraints, upsert all nodes, then upsert al
 
 Configure `src/CloudGraphAI.Console/appsettings.Development.json` or environment variables:
 
-- `AI:OpenAI:ModelId`
-- `AI:OpenAI:ApiKey` or `OPENAI_API_KEY`
 - `Neo4jSettings:*`
+- `AIModels:DefaultChatServiceId` optional; when empty, the first enabled chat deployment is used.
+- `AIModels:AzureFoundry:*`, `AIModels:GoogleVertexAI:*`, or `AIModels:AwsBedrock:*`.
+
+Only one AI provider needs to be enabled for the console to work. Each deployment has a globally unique `ServiceId`; `DefaultChatServiceId` must match one configured chat deployment when set.
+
+Example using Google Vertex AI:
+
+```json
+{
+  "AIModels": {
+    "DefaultChatServiceId": "gemini-3.5-flash",
+    "GoogleVertexAI": {
+      "Enabled": true,
+      "ProjectId": "my-gcp-project",
+      "Location": "global",
+      "CredentialsPath": "C:\\path\\to\\service-account.json",
+      "Deployments": [
+        {
+          "ServiceId": "gemini-3.5-flash",
+          "ModelId": "gemini-3.5-flash",
+          "Type": "Chat"
+        }
+      ]
+    }
+  }
+}
+```
+
+Example using Azure Foundry:
+
+```json
+{
+  "AIModels": {
+    "AzureFoundry": {
+      "Enabled": true,
+      "Endpoint": "https://my-foundry.services.ai.azure.com/",
+      "ApiKey": "",
+      "Deployments": [
+        {
+          "ServiceId": "azure-foundry-chat",
+          "DeploymentName": "my-chat-deployment",
+          "Type": "Chat"
+        }
+      ]
+    }
+  }
+}
+```
+
+Example using AWS Bedrock:
+
+```json
+{
+  "AIModels": {
+    "AwsBedrock": {
+      "Enabled": true,
+      "Region": "us-east-1",
+      "AccessKeyId": "",
+      "SecretAccessKey": "",
+      "Deployments": [
+        {
+          "ServiceId": "bedrock-chat",
+          "ModelId": "anthropic.claude-sonnet-4-20250514-v1:0",
+          "Type": "Chat"
+        }
+      ]
+    }
+  }
+}
+```
+
+For local development, keep provider keys and service-account paths in `appsettings.Development.json`, user secrets, or environment variables. Do not put real provider secrets in `appsettings.json`.
 
 Then run:
 
@@ -91,6 +161,16 @@ Then run:
 dotnet run --project src\CloudGraphAI.Console\CloudGraphAI.Console.csproj
 ```
 
-The AI console reads from Neo4j only. It does not call Azure or Google Cloud APIs at question time, so Azure CLI or gcloud authentication is not required for the console after the graph has been imported.
+The AI console reads cloud-resource data from Neo4j only. It does not call Azure or Google Cloud resource APIs at question time, so Azure CLI or gcloud authentication is not required for graph reads after the graph has been imported. The configured AI provider is still called for chat completion.
 
-The AI plugin can inspect the graph schema and execute read-only Cypher. It rejects write clauses, `CALL`, and multi-statement Cypher before execution.
+The AI plugin can inspect the graph schema and execute read-only Cypher. It rejects write clauses, `CALL`, multi-statement Cypher, and SQL-style `GROUP BY` before execution. Cypher aggregation is implicit: return grouping keys beside aggregate expressions, for example:
+
+```cypher
+MATCH (m:MonthResourceCost)
+WHERE m.resourceGroupName IS NOT NULL
+RETURN m.resourceGroupName AS resourceGroupName, m.currency AS currency, sum(m.cost) AS totalCost
+ORDER BY totalCost DESC
+LIMIT 10
+```
+
+If an AI-generated query fails, the Neo4j tool returns a structured `cypher_query_failed` result so the model can revise and retry instead of crashing the console.

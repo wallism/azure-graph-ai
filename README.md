@@ -2,7 +2,23 @@
 
 Graph cloud resources in Neo4j, then query that graph with an AI console.
 
-Open `src\CloudGraphAI.sln` in Visual Studio.
+Example question:
+
+> Show me the top 5 most expensive resource groups.
+
+Sample answer:
+
+### Top 5 Most Expensive Resource Groups
+
+| Rank | Resource Group | Subscription | Location | Total Cost (USD) | Primary Cost Driver |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| 1 | `prod-web-rg` | Production | East US | $82.15 | App Service Plan: `prod-web-plan` ($78.40) |
+| 2 | `analytics-rg` | Production | East US | $64.20 | SQL Database: `analytics-db` ($41.85) |
+| 3 | `integration-rg` | Shared Services | West US | $51.75 | Storage Account: `integrationstore` ($29.10) |
+| 4 | `training-apps-rg` | Training | Australia East | $44.30 | App Service Plan: `training-app-plan` ($39.95) |
+| 5 | `dev-tools-rg` | Development | West Europe | $37.60 | Container Registry: `devregistry` ($18.25) |
+
+
 
 ## Projects
 
@@ -47,3 +63,5 @@ Then query the loaded graph:
 ```powershell
 dotnet run --project src\CloudGraphAI.Console\CloudGraphAI.Console.csproj
 ```
+
+The AI console is configured through `AIModels` and supports Azure Foundry, Google Vertex AI, and AWS Bedrock. Enable one provider in `src\CloudGraphAI.Console\appsettings.Development.json`; see [Neo4j and AI console](docs/Shared.md#ai-console) for provider examples and Cypher query rules.
