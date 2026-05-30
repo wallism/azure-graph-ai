@@ -143,6 +143,8 @@ Some child or detail resources are loaded differently:
 - Web apps are loaded from the subscription-level sites endpoint, then enriched with resource-group-scoped calls for site config, app settings, connection strings, and Windows continuous WebJobs.
 - Container apps are loaded from the subscription-level Container Apps endpoint, then related to registries from their registry configuration.
 
+Subnet nodes use their full ARM ID as the primary key because subnet names can repeat across VNets. Extracted subnet graph properties include parent VNet ID/name, address prefixes, network security group ID, route table ID, service endpoint services, delegation service names, private endpoint/link policy states, IP configuration IDs, network intent policy IDs, and service association link details.
+
 This means adding support for a new Azure resource type is deliberate: add a model, add an API method, add/register a collector, and add relationship-building logic where that resource references or is referenced by other resources.
 
 ## Relationship Enrichment
