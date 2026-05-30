@@ -58,6 +58,7 @@ Some resources are part of a parent and are automatically included when the pare
 |-------|-------------------------------|
 | `Subnet` | `VNet` |
 | `VirtualNetworkPeering` | `VNet` |
+| `WebAppSiteConfig` | `WebApp` |
 | `WebJob` | `WebApp` |
 
 ### Available resource names
@@ -113,7 +114,7 @@ The import flow is:
    - `IN_GROUP`, where the ARM ID contains a resource group
    - optional `environment`, from configured environment rules
 7. After all nodes have been collected, collectors build cross-resource relationship IDs.
-8. Dangling relationship IDs are pruned before graph writes.
+8. Relationship writes whose target nodes were not loaded in the current import run are skipped before graph writes. Existing graph relationships are not deleted.
 9. Neo4j unique constraints are enforced.
 10. All nodes are upserted.
 11. All relationships are upserted.
@@ -159,6 +160,8 @@ Web Apps can also be related to Key Vaults with `CONNECTS_TO_KEYVAULT`. The impo
 - `vaultEndPoint`
 - `VaultEndpoint`
 - `keyVaultPrefix`
+
+Web App site configuration is represented as a `WebAppSiteConfig` child node linked from the parent Web App with `HAS_SITE_CONFIG`. The node stores Azure `siteConfig` scalar properties such as `minTlsVersion`, `scmMinTlsVersion`, `ftpsState`, HTTP/2, runtime, worker-process, VNet route-all, health-check, and IP restriction defaults.
 
 ## Environments
 

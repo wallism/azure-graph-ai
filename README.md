@@ -18,7 +18,13 @@ Sample answer:
 | 4 | `training-apps-rg` | Training | Australia East | $44.30 | App Service Plan: `training-app-plan` ($39.95) |
 | 5 | `dev-tools-rg` | Development | West Europe | $37.60 | Container Registry: `devregistry` ($18.25) |
 
-
+---
+How does it work? It works for Azure and Google Cloud but for the example let's use Azure...
+Connect to Azure, specify the subscriptionID's to import, run the importer. 
+Then switch to the Console app (advanced UI tech) and ask what you want to know about your resources, e.g.
+- Which WebApps connect to this KeyVault?
+- Give me a count of the different farm types
+- Which WebApps do not enforce TLS1.2?
 
 ## Projects
 

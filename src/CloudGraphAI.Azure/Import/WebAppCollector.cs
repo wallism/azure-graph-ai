@@ -25,7 +25,7 @@ public sealed class WebAppCollector(
         if (!_options.IncludeWebAppDetails)
             return;
 
-        await LoadSiteConfigAsync(webApp, subscriptionId, cancellationToken).ConfigureAwait(false);
+        await LoadSiteConfigAsync(webApp, context, subscriptionId, cancellationToken).ConfigureAwait(false);
         await LoadAppSettingsAsync(webApp, subscriptionId, cancellationToken).ConfigureAwait(false);
         await LoadConnectionStringsAsync(webApp, subscriptionId, cancellationToken).ConfigureAwait(false);
 
@@ -90,11 +90,32 @@ public sealed class WebAppCollector(
             ids.Add(node.Id);
     }
 
-    private async Task LoadSiteConfigAsync(WebApp webApp, string subscriptionId, CancellationToken cancellationToken)
+    private async Task LoadSiteConfigAsync(WebApp webApp, AzureImportContext context, string subscriptionId, CancellationToken cancellationToken)
     {
         var result = await AzureApi.GetWebAppSiteConfigAsync(subscriptionId, webApp, cancellationToken).ConfigureAwait(false);
-        if (result is { WasSuccessful: true, Value: not null })
-            webApp.Properties!.SiteConfig = result.Value.Value.FirstOrDefault()?.Properties;
+        if (result is not { WasSuccessful: true, Value: not null })
+            return;
+
+        var wrapper = result.Value.Value.FirstOrDefault(config => config.Properties is not null);
+        if (wrapper?.Properties is null)
+            return;
+
+        webApp.Properties ??= new WebAppProperties();
+        webApp.Properties.SiteConfig = wrapper.Properties;
+
+        var configNode = new WebAppSiteConfig
+        {
+            Id = string.IsNullOrWhiteSpace(wrapper.Id) ? $"{webApp.Id}/config/web" : wrapper.Id,
+            Name = string.IsNullOrWhiteSpace(wrapper.Name) ? $"{webApp.Name}/web" : wrapper.Name,
+            Type = string.IsNullOrWhiteSpace(wrapper.Type) ? "Microsoft.Web/sites/config" : wrapper.Type,
+            Location = string.IsNullOrWhiteSpace(wrapper.Location) ? webApp.Location : wrapper.Location,
+            Properties = wrapper.Properties
+        };
+        context.ApplyCommonResourceLinks(configNode);
+        context.AddNodes([configNode]);
+
+        if (!webApp.SiteConfigs.Contains(configNode.Id, StringComparer.OrdinalIgnoreCase))
+            webApp.SiteConfigs.Add(configNode.Id);
     }
 
     private async Task LoadAppSettingsAsync(WebApp webApp, string subscriptionId, CancellationToken cancellationToken)

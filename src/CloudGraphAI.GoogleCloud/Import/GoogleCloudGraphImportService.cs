@@ -185,7 +185,7 @@ public sealed class GoogleCloudGraphImportService(
                 if (missingIds.Count > 0)
                 {
                     logger.LogWarning(
-                        "Pruned {Count} dangling {SourceLabel}-[{Relationship}]->{TargetLabel} relationship ids from {SourceId}",
+                        "Skipped {Count} {SourceLabel}-[{Relationship}]->{TargetLabel} relationship writes from {SourceId} because target nodes were not loaded in this import run",
                         missingIds.Count,
                         node.LabelName,
                         relationship.RelationshipName,
@@ -197,7 +197,11 @@ public sealed class GoogleCloudGraphImportService(
         }
 
         if (dangling.Count > 0)
-            logger.LogWarning("Pruned {Count} dangling Google Cloud relationship ids before writing edges. Nodes will still be imported.", dangling.Count);
+        {
+            logger.LogWarning(
+                "Skipped {Count} Google Cloud relationship writes because target nodes were not loaded in this import run. Nodes will still be imported and existing graph relationships are not deleted.",
+                dangling.Count);
+        }
 
         return dangling;
     }

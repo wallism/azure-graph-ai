@@ -1,3 +1,6 @@
+using System.Net;
+using System.Text;
+using Agile.API.Clients.CallHandling;
 using CloudGraphAI.Azure.Api;
 using CloudGraphAI.Azure.Configuration;
 using CloudGraphAI.Azure.Environments;
@@ -5,6 +8,7 @@ using CloudGraphAI.Azure.Import;
 using CloudGraphAI.Azure.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -15,6 +19,7 @@ public class WebAppCollectorBuildRelationshipsTests
 {
     private IAzureResourceCollector _collector = null!;
     private AzureImportContext _context = null!;
+    private IAzureRestApi _azureApi = null!;
 
     [SetUp]
     public void SetUp()
@@ -27,13 +32,69 @@ public class WebAppCollectorBuildRelationshipsTests
             })
             .Build();
 
+        _azureApi = Substitute.For<IAzureRestApi>();
         _collector = new WebAppCollector(
-            Substitute.For<IAzureRestApi>(),
+            _azureApi,
             config,
             Substitute.For<ILogger<WebAppCollector>>());
 
         var environmentResolver = Substitute.For<IResourceEnvironmentResolver>();
         _context = new AzureImportContext(["sub1"], environmentResolver);
+    }
+
+    [Test]
+    public async Task CollectAsync_LoadsSiteConfigAsLinkedGraphNode()
+    {
+        const string webAppId = "/subscriptions/sub1/resourceGroups/rg1/providers/Microsoft.Web/sites/my-app";
+        const string siteConfigId = $"{webAppId}/config/web";
+        var webApp = new WebApp
+        {
+            Id = webAppId,
+            Name = "my-app",
+            Type = "Microsoft.Web/sites",
+            Location = "australiaeast",
+            Properties = new WebAppProperties()
+        };
+
+        _azureApi.GetWebAppsAsync("sub1", Arg.Any<CancellationToken>())
+            .Returns(SuccessAsync(new AzureResourceListResult<WebApp> { Value = [webApp] }));
+        _azureApi.GetWebAppSiteConfigAsync("sub1", Arg.Any<WebApp>(), Arg.Any<CancellationToken>())
+            .Returns(SuccessAsync(new WebAppConfig
+            {
+                Value =
+                [
+                    new SiteConfigWrapper
+                    {
+                        Id = siteConfigId,
+                        Name = "my-app/web",
+                        Type = "Microsoft.Web/sites/config",
+                        Location = "australiaeast",
+                        Properties = new SiteConfig
+                        {
+                            MinTlsVersion = "1.2",
+                            ScmMinTlsVersion = "1.2",
+                            FtpsState = "FtpsOnly",
+                            AlwaysOn = true
+                        }
+                    }
+                ]
+            }));
+        _azureApi.GetWebAppSettingsAsync("sub1", Arg.Any<WebApp>(), Arg.Any<CancellationToken>())
+            .Returns(SuccessAsync(new AppSettings()));
+        _azureApi.GetWebAppConnectionStringsAsync("sub1", Arg.Any<WebApp>(), Arg.Any<CancellationToken>())
+            .Returns(SuccessAsync(new ConnectionStrings()));
+
+        await _collector.CollectAsync(_context);
+
+        var result = _context.GetNodes<WebApp>().Single();
+        var siteConfig = _context.GetNodes<WebAppSiteConfig>().Single();
+
+        Assert.That(result.SiteConfigs, Is.EqualTo(new[] { siteConfigId }));
+        Assert.That(siteConfig.Id, Is.EqualTo(siteConfigId));
+        Assert.That(siteConfig.Properties?.MinTlsVersion, Is.EqualTo("1.2"));
+        Assert.That(siteConfig.Properties?.ScmMinTlsVersion, Is.EqualTo("1.2"));
+        Assert.That(siteConfig.ResourceGroups, Is.EqualTo(new[] { "/subscriptions/sub1/resourceGroups/rg1" }));
+        Assert.That(siteConfig.Subscriptions, Is.EqualTo(new[] { "/subscriptions/sub1" }));
     }
 
     [Test]
@@ -163,5 +224,17 @@ public class WebAppCollectorBuildRelationshipsTests
 
         var result = _context.GetNodes<WebApp>().First();
         Assert.That(result.KeyVaults, Is.Empty);
+    }
+
+    private static async Task<CallResult<T>> SuccessAsync<T>(T value)
+        where T : class
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, "https://management.azure.test/");
+        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(JsonConvert.SerializeObject(value), Encoding.UTF8, "application/json")
+        };
+
+        return await CallResult<T>.Wrap(request, response, 1);
     }
 }

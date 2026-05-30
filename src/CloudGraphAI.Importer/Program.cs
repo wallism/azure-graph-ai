@@ -260,14 +260,14 @@ static void PrintNeo4jSettings(
         : $"    Neo4j: FAILED ({error})");
 }
 
-static void PrintImportSummary(string providerName, IReadOnlyDictionary<string, int> nodeCounts, int danglingRelationshipCount)
+static void PrintImportSummary(string providerName, IReadOnlyDictionary<string, int> nodeCounts, int skippedRelationshipCount)
 {
     Console.WriteLine($"{providerName} import complete.");
     foreach (var count in nodeCounts)
         Console.WriteLine($"{providerName} {count.Key}: {count.Value}");
 
-    if (danglingRelationshipCount > 0)
-        Console.WriteLine($"{providerName} dangling relationships pruned: {danglingRelationshipCount}");
+    if (skippedRelationshipCount > 0)
+        Console.WriteLine($"{providerName} relationship writes skipped because target nodes were not in this import run: {skippedRelationshipCount}");
 }
 
 internal sealed record EnabledGraphProviders(bool Azure, bool GoogleCloud)

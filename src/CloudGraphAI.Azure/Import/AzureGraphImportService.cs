@@ -247,7 +247,7 @@ public sealed class AzureGraphImportService(
                 if (missingIds.Count > 0)
                 {
                     logger.LogWarning(
-                        "Pruned {Count} dangling {SourceLabel}-[{Relationship}]->{TargetLabel} relationship ids from {SourceId}",
+                        "Skipped {Count} {SourceLabel}-[{Relationship}]->{TargetLabel} relationship writes from {SourceId} because target nodes were not loaded in this import run",
                         missingIds.Count,
                         node.LabelName,
                         relationship.RelationshipName,
@@ -261,7 +261,7 @@ public sealed class AzureGraphImportService(
         if (dangling.Count > 0)
         {
             logger.LogWarning(
-                "Pruned {Count} dangling relationship ids before writing edges. Nodes will still be imported.",
+                "Skipped {Count} relationship writes because target nodes were not loaded in this import run. Nodes will still be imported and existing graph relationships are not deleted.",
                 dangling.Count);
         }
 

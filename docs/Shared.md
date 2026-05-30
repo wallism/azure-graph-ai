@@ -75,7 +75,7 @@ You can verify the database is online with:
 SHOW DATABASE `cloud-graph-ai` YIELD name, currentStatus;
 ```
 
-The import services enforce unique constraints, upsert all nodes, then upsert all relationships. Dangling relationship IDs are pruned before graph writes so edges are only written when both endpoint nodes were loaded in the current import context.
+The import services enforce unique constraints, upsert all nodes, then upsert all relationships. Relationship writes are skipped when the target node was not loaded in the current import context, so partial imports are additive and do not delete existing graph relationships.
 
 ## AI Console
 
