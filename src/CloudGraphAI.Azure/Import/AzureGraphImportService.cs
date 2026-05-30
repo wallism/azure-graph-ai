@@ -55,11 +55,14 @@ public sealed class AzureGraphImportService(
             throw new InvalidOperationException("No subscriptions configured. Set AzureGraph:IncludedSubscriptions.");
 
         var context = new AzureImportContext(subscriptionIds, environmentResolver);
-        var options = configuration.GetSection("AzureGraph").Get<AzureGraphOptions>() ?? new();
+        var includeResources = LoadIncludeResources();
         var orderedCollectors = collectors
-            .Where(c => ShouldIncludeCollector(c, options.IncludeResources))
+            .Where(c => ShouldIncludeCollector(c, includeResources))
             .OrderBy(c => c.Order)
             .ToList();
+
+        logger.LogInformation("Active collectors ({Count}): {Collectors}",
+            orderedCollectors.Count, string.Join(", ", orderedCollectors.Select(c => c.Name)));
 
         foreach (var collector in orderedCollectors)
         {
@@ -101,6 +104,21 @@ public sealed class AzureGraphImportService(
 
     private List<string> LoadSubscriptionIds()
         => AzureGraphSubscriptionConfiguration.LoadSubscriptionIds(configuration);
+
+    private List<string> LoadIncludeResources()
+    {
+        // CLI override takes precedence (comma-separated string stored to avoid array-merge issues)
+        var overrideValue = configuration["AzureGraph:IncludeResourcesOverride"];
+        if (!string.IsNullOrWhiteSpace(overrideValue))
+        {
+            return overrideValue
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .ToList();
+        }
+
+        var options = configuration.GetSection("AzureGraph").Get<AzureGraphOptions>();
+        return options?.IncludeResources is { Count: > 0 } list ? list : ["All"];
+    }
 
     private async Task CreateCostRelationshipsAsync(AzureImportContext context, CancellationToken cancellationToken)
     {

@@ -57,7 +57,7 @@ public sealed class ResourceCostCollector(
                     "Cost import skipped for subscription {SubscriptionId}: access denied (HTTP {StatusCode}). " +
                     "The authenticated identity requires the 'Cost Management Reader' role (or higher) " +
                     "at the subscription scope to retrieve cost data. " +
-                    "Assign the role via: az role assignment create --assignee <principalId> --role 'Cost Management Reader' --scope /subscriptions/{SubscriptionId}",
+                    "Assign the role via: az role assignment create --assignee <principalId> --role 'Cost Management Reader' --scope /subscriptions/<subscriptionId>",
                     subscriptionId, (int)result.StatusCode);
                 continue;
             }

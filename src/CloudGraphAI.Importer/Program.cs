@@ -29,15 +29,13 @@ var includeResourcesArg = args
 
 if (!string.IsNullOrWhiteSpace(includeResourcesArg))
 {
-    var resources = includeResourcesArg.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-    var overrides = new Dictionary<string, string?>();
-    for (var i = 0; i < resources.Length; i++)
+    // Store as a pipe-delimited override key that the import service reads directly.
+    // This avoids .NET config array merging issues with multiple JSON providers.
+    builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
     {
-        overrides[$"AzureGraph:IncludeResources:{i}"] = resources[i];
-        overrides[$"GoogleCloudGraph:IncludeResources:{i}"] = resources[i];
-    }
-
-    builder.Configuration.AddInMemoryCollection(overrides);
+        ["AzureGraph:IncludeResourcesOverride"] = includeResourcesArg,
+        ["GoogleCloudGraph:IncludeResourcesOverride"] = includeResourcesArg
+    });
 }
 
 builder.Logging.ClearProviders();
