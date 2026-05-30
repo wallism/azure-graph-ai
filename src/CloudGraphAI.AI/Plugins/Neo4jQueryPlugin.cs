@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Neo4j.Driver;
 using Neo4jLiteRepo;
+using Neo4jLiteRepo.Exceptions;
 using Newtonsoft.Json;
 
 namespace CloudGraphAI.AI.Plugins;
@@ -41,20 +42,61 @@ public sealed class Neo4jQueryPlugin(
         return JsonConvert.SerializeObject(properties);
     }
 
-    [KernelFunction, Description("Executes a read-only Cypher query and returns result rows as compact JSON. Use this after creating a MATCH/RETURN query.")]
+    [KernelFunction, Description("Executes a read-only Cypher query and returns result rows as compact JSON. Cypher has no GROUP BY clause; aggregate by returning non-aggregated expressions alongside sum/count/etc.")]
     public async Task<string> ExecuteReadOnlyCypherAsync(
-        [Description("A single read-only Cypher query. Writes, CALL, DELETE, CREATE, MERGE, SET, DROP and multi-statements are rejected.")] string cypher,
+        [Description("A single read-only Cypher query. Do not use SQL GROUP BY; in Cypher, RETURN a, sum(b) AS total groups by a. Writes, CALL, DELETE, CREATE, MERGE, SET, DROP and multi-statements are rejected.")] string cypher,
         [Description("Maximum rows to return. Defaults to 100 and is capped at 500.")] int maxRows = 100)
     {
         var cappedRows = Math.Clamp(maxRows, 1, 500);
-        var safeQuery = CypherSafety.PrepareReadOnlyQuery(cypher, cappedRows);
-        logger.LogInformation("Executing AI-generated read-only Cypher: {Cypher}", safeQuery);
+        string safeQuery;
+        try
+        {
+            safeQuery = CypherSafety.PrepareReadOnlyQuery(cypher, cappedRows);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return SerializeQueryError(ex.Message);
+        }
 
-        var records = await repo.ExecuteRawReadQueryAsync(safeQuery).ConfigureAwait(false);
-        var rows = records.Select(record =>
-            record.Keys.ToDictionary(key => key, key => ToSerializable(record[key]))).ToList();
+        try
+        {
+            logger.LogInformation("Executing AI-generated read-only Cypher: {Cypher}", safeQuery);
 
-        return JsonConvert.SerializeObject(rows);
+            var records = await repo.ExecuteRawReadQueryAsync(safeQuery).ConfigureAwait(false);
+            var rows = records.Select(record =>
+                record.Keys.ToDictionary(key => key, key => ToSerializable(record[key]))).ToList();
+
+            return JsonConvert.SerializeObject(rows);
+        }
+        catch (RepositoryException ex)
+        {
+            logger.LogWarning(ex, "AI-generated Cypher failed. QueryLength={QueryLength}", safeQuery.Length);
+            return SerializeQueryError(GetRootMessage(ex));
+        }
+        catch (ClientException ex)
+        {
+            logger.LogWarning(ex, "AI-generated Cypher failed. QueryLength={QueryLength}", safeQuery.Length);
+            return SerializeQueryError(ex.Message);
+        }
+    }
+
+    private static string SerializeQueryError(string message)
+        => JsonConvert.SerializeObject(new
+        {
+            error = "cypher_query_failed",
+            message,
+            retryGuidance = "Revise the Cypher and call this tool again. For aggregation, Cypher has no GROUP BY clause; return grouping keys alongside aggregate expressions instead."
+        });
+
+    private static string GetRootMessage(Exception ex)
+    {
+        var current = ex;
+        while (current.InnerException is not null)
+        {
+            current = current.InnerException;
+        }
+
+        return current.Message;
     }
 
     private static object? ToSerializable(object? value)

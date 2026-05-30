@@ -16,6 +16,10 @@ internal static partial class CypherSafety
         @"\bLIMIT\s+\d+\b",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
+    private static readonly Regex SqlGroupBy = new(
+        @"\bGROUP\s+BY\b",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
     public static string PrepareReadOnlyQuery(string query, int maxRows)
     {
         var normalized = StripCodeFence(query).Trim();
@@ -30,6 +34,12 @@ internal static partial class CypherSafety
 
         if (ForbiddenWriteClauses.IsMatch(normalized))
             throw new InvalidOperationException("The query contains a clause that is not allowed in read-only mode.");
+
+        if (SqlGroupBy.IsMatch(normalized))
+        {
+            throw new InvalidOperationException(
+                "Cypher does not support SQL-style GROUP BY. Group by returning non-aggregated expressions alongside aggregate expressions, for example: RETURN n.name AS name, sum(c.cost) AS totalCost ORDER BY totalCost DESC.");
+        }
 
         if (!ExistingLimit.IsMatch(normalized))
             normalized = $"{normalized}{Environment.NewLine}LIMIT {maxRows}";

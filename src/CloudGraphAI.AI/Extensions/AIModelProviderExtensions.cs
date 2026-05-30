@@ -2,12 +2,14 @@ using Amazon;
 using Amazon.BedrockRuntime;
 using Amazon.Runtime;
 using CloudGraphAI.AI.Configuration;
+using CloudGraphAI.AI.GoogleVertexAI;
 using Google.Apis.Auth.OAuth2;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.Google;
+using System.Text.Json;
 
 namespace CloudGraphAI.AI.Extensions;
 
@@ -80,6 +82,7 @@ public static class AIModelProviderExtensions
         var projectId = RequireValue(options.ProjectId, "AIModels:GoogleVertexAI:ProjectId");
         var location = RequireValue(options.Location, "AIModels:GoogleVertexAI:Location");
         var bearerTokenProvider = CreateGoogleAccessTokenProvider(options.CredentialsPath);
+        var httpClient = CreateGoogleVertexAIHttpClient();
 
         foreach (var deployment in options.Deployments.Where(IsChatDeployment))
         {
@@ -92,9 +95,16 @@ public static class AIModelProviderExtensions
                 location: location,
                 projectId: projectId,
                 apiVersion: VertexAIVersion.V1,
-                serviceId: serviceId);
+                serviceId: serviceId,
+                httpClient: httpClient);
         }
     }
+
+    private static HttpClient CreateGoogleVertexAIHttpClient()
+        => new(new GoogleVertexAIGlobalEndpointHandler
+        {
+            InnerHandler = new HttpClientHandler()
+        });
 
     private static void RegisterAwsBedrockChatDeployments(
         IKernelBuilder builder,
@@ -199,13 +209,47 @@ public static class AIModelProviderExtensions
     {
         var credential = string.IsNullOrWhiteSpace(credentialsPath)
             ? await GoogleCredential.GetApplicationDefaultAsync().ConfigureAwait(false)
-            : await CredentialFactory
-                .FromFileAsync(credentialsPath, credentialType: null!, CancellationToken.None)
-                .ConfigureAwait(false);
+            : await LoadGoogleCredentialFromFileAsync(credentialsPath).ConfigureAwait(false);
 
         return credential.IsCreateScopedRequired
             ? credential.CreateScoped(GoogleCloudPlatformScope)
             : credential;
+    }
+
+    private static async Task<GoogleCredential> LoadGoogleCredentialFromFileAsync(string credentialsPath)
+    {
+        var credentialType = await ReadGoogleCredentialTypeAsync(credentialsPath).ConfigureAwait(false);
+        if (string.Equals(credentialType, "service_account", StringComparison.OrdinalIgnoreCase))
+        {
+            var serviceAccountCredential = await CredentialFactory
+                .FromFileAsync<ServiceAccountCredential>(credentialsPath, CancellationToken.None)
+                .ConfigureAwait(false);
+
+            return serviceAccountCredential.ToGoogleCredential();
+        }
+
+        if (string.Equals(credentialType, "authorized_user", StringComparison.OrdinalIgnoreCase))
+        {
+            var userCredential = await CredentialFactory
+                .FromFileAsync<UserCredential>(credentialsPath, CancellationToken.None)
+                .ConfigureAwait(false);
+
+            return userCredential.ToGoogleCredential();
+        }
+
+#pragma warning disable CS0618
+        return await GoogleCredential.FromFileAsync(credentialsPath, CancellationToken.None).ConfigureAwait(false);
+#pragma warning restore CS0618
+    }
+
+    private static async Task<string?> ReadGoogleCredentialTypeAsync(string credentialsPath)
+    {
+        await using var stream = File.OpenRead(credentialsPath);
+        using var document = await JsonDocument.ParseAsync(stream).ConfigureAwait(false);
+
+        return document.RootElement.TryGetProperty("type", out var typeElement)
+            ? typeElement.GetString()
+            : null;
     }
 
     private static bool IsChatDeployment(AzureFoundryDeploymentOptions deployment)
