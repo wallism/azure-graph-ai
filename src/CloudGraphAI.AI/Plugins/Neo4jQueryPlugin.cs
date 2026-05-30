@@ -60,7 +60,7 @@ public sealed class Neo4jQueryPlugin(
 
         try
         {
-            logger.LogInformation("Executing AI-generated read-only Cypher: {Cypher}", safeQuery);
+            logger.LogInformation("Executing read-only Cypher:{NewLine}{Cypher}", Environment.NewLine, safeQuery);
 
             var records = await repo.ExecuteRawReadQueryAsync(safeQuery).ConfigureAwait(false);
             var rows = records.Select(record =>
