@@ -21,15 +21,6 @@ builder.Logging.AddSimpleConsole(options =>
     options.TimestampFormat = "HH:mm:ss ";
 });
 
-var apiKey = builder.Configuration["AI:OpenAI:ApiKey"]
-             ?? Environment.GetEnvironmentVariable("OPENAI_API_KEY");
-if (string.IsNullOrWhiteSpace(apiKey))
-    throw new InvalidOperationException("Set AI:OpenAI:ApiKey or OPENAI_API_KEY.");
-
-var modelId = builder.Configuration["AI:OpenAI:ModelId"];
-if (string.IsNullOrWhiteSpace(modelId))
-    throw new InvalidOperationException("Set AI:OpenAI:ModelId.");
-
 var kernelBuilder = Kernel.CreateBuilder();
 kernelBuilder.Services.AddLogging(logging => logging.AddSimpleConsole(options =>
 {
@@ -37,7 +28,7 @@ kernelBuilder.Services.AddLogging(logging => logging.AddSimpleConsole(options =>
     options.TimestampFormat = "HH:mm:ss ";
 }));
 kernelBuilder.Services.AddSingleton(builder.Configuration);
-kernelBuilder.AddOpenAIChatCompletion(modelId, apiKey);
+kernelBuilder.AddConfiguredAIModelProviders(builder.Configuration);
 kernelBuilder.AddCloudGraphNeo4jTools(builder.Configuration);
 
 var kernel = kernelBuilder.Build();

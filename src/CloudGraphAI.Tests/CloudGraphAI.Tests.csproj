@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\CloudGraphAI.AI\CloudGraphAI.AI.csproj" />
     <ProjectReference Include="..\CloudGraphAI.Azure\CloudGraphAI.Azure.csproj" />
   </ItemGroup>
 

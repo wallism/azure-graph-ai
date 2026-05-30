@@ -2,7 +2,6 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace CloudGraphAI.AI;
 
@@ -34,9 +33,9 @@ public sealed class GraphChatRunner(IConfiguration configuration) : IGraphChatRu
             }
 
             history.AddUserMessage(question);
-            var settings = new OpenAIPromptExecutionSettings
+            var settings = new PromptExecutionSettings
             {
-                ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+                FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
             };
 
             var answer = new StringBuilder();
